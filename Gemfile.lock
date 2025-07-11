@@ -101,6 +101,8 @@ GEM
       raabro (~> 1.4)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    google-id-token (1.4.2)
+      jwt (>= 1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     io-console (0.8.0)
@@ -109,6 +111,8 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.12.2)
+    jwt (3.1.2)
+      base64
     kamal (2.7.0)
       activesupport (>= 7.0)
       base64 (~> 0.2)
@@ -314,6 +318,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   debug
+  google-id-token (~> 1.4)
   kamal
   pg (~> 1.1)
   puma (>= 5.0)
