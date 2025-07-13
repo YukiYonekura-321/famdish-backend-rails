@@ -47,3 +47,9 @@ group :development, :test do
 end
 
 gem "google-id-token", "~> 1.4"
+
+gem "rack-cors"
+
+gem "dotenv-rails", groups: [ :development, :test ]
+
+gem "firebase_id_token", "~> 2.5"
