@@ -1,5 +1,7 @@
 class ApplicationController < ActionController::API
   before_action :authenticate_user!
+  before_action :set_default_format
+
 
   private
   # 認証を行うメソッド。認証が必要なAPIエンドポイントで before_action :authenticate_user! のように使います。
@@ -24,10 +26,13 @@ class ApplicationController < ActionController::API
 
   def authenticate_user!
     token = request.headers["Authorization"]&.split(" ")&.last
+    Rails.logger.info "Authorization Header: #{request.headers['Authorization']}" # ←追加
+
     return render_unauthorized("トークンがありません") unless token
 
     begin
       verified_token = FirebaseIdToken::Signature.verify(token)
+      Rails.logger.info "Decoded token payload: #{verified_token.inspect}"
       if verified_token
         @current_user = User.find_or_create_by(firebase_uid: verified_token["user_id"])
       else
@@ -37,6 +42,10 @@ class ApplicationController < ActionController::API
       Rails.logger.error "認証エラー: #{e.message}"
       render_unauthorized("認証中にエラーが発生しました")
     end
+  end
+
+  def set_default_format
+    request.format = :json
   end
 end
 
