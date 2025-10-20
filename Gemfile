@@ -50,6 +50,7 @@ group :development do
   gem "ruby-lsp"
   gem "debug"
   gem "rubocop", require: false
+  gem "hirb"
 end
 
 gem "google-id-token", "~> 1.4"

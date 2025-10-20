@@ -110,6 +110,7 @@ GEM
       activesupport (>= 6.1)
     google-id-token (1.4.2)
       jwt (>= 1)
+    hirb (0.7.3)
     httparty (0.23.1)
       csv
       mini_mime (>= 1.0.0)
@@ -333,6 +334,7 @@ DEPENDENCIES
   dotenv-rails
   firebase_id_token (~> 2.5)
   google-id-token (~> 1.4)
+  hirb
   kamal
   pg (~> 1.1)
   puma (>= 5.0)
