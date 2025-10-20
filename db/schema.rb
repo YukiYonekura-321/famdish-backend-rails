@@ -10,9 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_13_001624) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_23_003037) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "dislikes", force: :cascade do |t|
+    t.bigint "member_id", null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_id"], name: "index_dislikes_on_member_id"
+  end
+
+  create_table "likes", force: :cascade do |t|
+    t.bigint "member_id", null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_id"], name: "index_likes_on_member_id"
+  end
+
+  create_table "members", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "menus", force: :cascade do |t|
     t.string "menu"
@@ -26,4 +48,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_13_001624) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "dislikes", "members"
+  add_foreign_key "likes", "members"
 end
