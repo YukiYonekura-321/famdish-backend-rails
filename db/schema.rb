@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_23_003037) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,6 +20,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_003037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["member_id"], name: "index_dislikes_on_member_id"
+  end
+
+  create_table "families", force: :cascade do |t|
+    t.string "name"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_families_on_user_id"
   end
 
   create_table "likes", force: :cascade do |t|
@@ -34,11 +42,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_003037) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "family_id"
   end
 
   create_table "menus", force: :cascade do |t|
     t.string "menu"
     t.string "favorite"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "suggestions", force: :cascade do |t|
+    t.integer "family_id"
+    t.json "requests"
+    t.text "ai_raw_json"
+    t.string "chosen_option"
+    t.text "feedback"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -50,5 +69,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_23_003037) do
   end
 
   add_foreign_key "dislikes", "members"
+  add_foreign_key "families", "users"
   add_foreign_key "likes", "members"
 end

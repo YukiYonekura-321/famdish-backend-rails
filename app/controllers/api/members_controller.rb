@@ -15,11 +15,18 @@ module Api
     end
 
     def create
-      member = Member.new(member_params)
-      if member.save
-        render json: member.as_json(include: [:likes, :dislikes]), status: :created
-      else
-        render json: { errors: member.errors.full_messages }, status: :unprocessable_entity
+      ActiveRecord::Base.transaction do
+        # Family を作成
+        family = @current_user.family || Family.create!(name: params[:family][:name], user: @current_user)
+
+        # Member を作成
+        member = Member.new(member_params)
+        member.family = family  # familyを紐付け
+        member.save!
+
+        render json: member.as_json(include: [:likes, :dislikes, family: { only: [:id, :name] }]), status: :created
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
