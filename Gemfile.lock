@@ -203,7 +203,7 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.4.0)
+    prism (1.6.0)
     psych (5.2.6)
       date
       stringio
@@ -253,7 +253,7 @@ GEM
       zeitwerk (~> 2.6)
     rainbow (3.1.1)
     rake (13.3.0)
-    rbs (3.9.4)
+    rbs (3.9.5)
       logger
     rdoc (6.14.2)
       erb
@@ -278,7 +278,7 @@ GEM
     rubocop-ast (1.45.1)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
-    ruby-lsp (0.25.0)
+    ruby-lsp (0.26.4)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)
