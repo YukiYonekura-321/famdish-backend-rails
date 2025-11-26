@@ -62,3 +62,5 @@ gem "dotenv-rails", groups: [ :development, :test ]
 gem "firebase_id_token", "~> 2.5"
 
 gem "terminal-table", "~> 4.0"
+
+gem "ruby-openai"

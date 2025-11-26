@@ -98,6 +98,15 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
+    event_stream_parser (1.0.0)
+    faraday (2.14.0)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-multipart (1.1.1)
+      multipart-post (~> 2.0)
+    faraday-net_http (3.4.2)
+      net-http (~> 0.5)
     firebase_id_token (2.5.2)
       httparty (~> 0.21, >= 0.16.2)
       jwt (~> 2.1, >= 2.1.0)
@@ -153,6 +162,9 @@ GEM
     msgpack (1.8.0)
     multi_xml (0.7.2)
       bigdecimal (~> 3.1)
+    multipart-post (2.4.1)
+    net-http (0.8.0)
+      uri (>= 0.11.1)
     net-imap (0.5.9)
       date
       net-protocol
@@ -270,6 +282,10 @@ GEM
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)
+    ruby-openai (8.3.0)
+      event_stream_parser (>= 0.3.0, < 2.0.0)
+      faraday (>= 1)
+      faraday-multipart (>= 1)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
     solid_cable (3.0.11)
@@ -342,6 +358,7 @@ DEPENDENCIES
   rails (~> 8.0.2)
   rubocop
   ruby-lsp
+  ruby-openai
   solid_cable
   solid_cache
   solid_queue
