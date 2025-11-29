@@ -5,13 +5,16 @@ class Api::SuggestionsController < ApplicationController
 
     # フロントから渡されるパラメータ
     requests      = params[:requests] # ["カレー","サラダ","パスタ","肉"]
-    constraints   = params[:constraints] || {}
+    id   = params[:sgId] || {}
 
     # OpenAIへ投げるプロンプトを作成
-    prompt = build_prompt(family_id, requests, constraints)
+    if id.present?
+      feedback = Suggestion.find(id).feedback
+      prompt = build_prompt(family_id, requests, feedback)
+    else
+      prompt = build_prompt(family_id, requests, {})
 
-    # プロンプトをコンソールに表示
-    puts(prompt)
+    end
 
     # OpenAI API 呼び出し
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
@@ -37,20 +40,32 @@ class Api::SuggestionsController < ApplicationController
     )
 
     # そのまま返す
-    render json: { id: suggestion.id, suggestions: JSON.parse(ai_result) }
+    render json: { id: suggestion.id, suggest_field: JSON.parse(ai_result) }
+  end
+
+
+  def feedback
+    suggestion = Suggestion.find(params[:id])
+
+    suggestion.update!(
+      chosen_option: params[:chosenOption],   # ["OK","alt"]
+      feedback: params[:feedbackNote]  # "良かった点、悪かった点など"
+    )
+
+    render json: { message: "saved" }
   end
 
   private
 
   # GPTに渡すプロンプト生成
-  def build_prompt(family_id, requests, constraints)
+  def build_prompt(family_id, requests, feedback)
     members = Member.where(family_id: family_id)
 
     likes  = members.map { |m| { name: m.name, likes: m.likes } }
     dislikes = members.map { |m| { name: m.name, dislikes: m.dislikes } }
 
     <<~PROMPT
-    家族構成と今日のリクエストをもとに、献立案を3つJSONで返してください。
+    家族構成と今日のリクエストをもとに、献立案を1つJSONで返してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
 
     ▼家族の好み
@@ -60,19 +75,16 @@ class Api::SuggestionsController < ApplicationController
     ▼今日のリクエスト
     #{requests.to_json}
 
-    ▼制約
-    #{constraints.to_json}
+    ▼過去のフィードバック
+    #{feedback.to_json}
 
     ▼返す形式（厳守）
     {
-      "suggestions": [
-        {
-          "title": "string",
-          "reason": "string",
-          "time": 30,
-          "ingredients": ["材料1", "材料2"]
-        }
-      ]
+      "title": "string",
+      "reason": "string",
+      "time": 30,
+      "ingredients": ["材料1", "材料2"],
+      "requests": #{requests}
     }
     PROMPT
   end
