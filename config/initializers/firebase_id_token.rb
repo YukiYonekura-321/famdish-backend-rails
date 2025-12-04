@@ -1,5 +1,5 @@
 FirebaseIdToken.configure do |config|
-  config.redis = Redis.new
+  config.redis = Redis.new(url: ENV["REDIS_URL"])
   config.project_ids = [ "famdish-6f806" ]  # ← Firebase プロジェクトIDを設定
 end
 
