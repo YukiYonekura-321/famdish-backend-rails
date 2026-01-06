@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "/api/health", to: proc { [200, {}, ["ok"]] }
+
   namespace :api do
     resources :menus, only: [ :index, :show, :create, :update, :destroy ]
     resources :members, only: [ :index, :show, :create, :update, :destroy ]
