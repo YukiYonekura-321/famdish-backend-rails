@@ -1,5 +1,5 @@
 production:
-  # AWS（RDS）運用の場合は、環境変数に入れるだけ：DATABASE_URL=postgres://username:password@rds.amazonaws.com/host:port
+  # AWS（RDS）運用の場合は、環境変数に入れるだけ：DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/DATABASE
   url: <%= ENV["DATABASE_URL"] %>
   adapter: postgresql
   encoding: unicode
