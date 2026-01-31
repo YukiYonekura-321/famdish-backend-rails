@@ -1,11 +1,13 @@
 production:
+  # AWS（RDS）運用の場合は、環境変数に入れるだけ：DATABASE_URL=postgres://username:password@rds.amazonaws.com/host:port
+  url: <%= ENV["DATABASE_URL"] %>
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-  username: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_USERNAME') %>
-  host: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_HOST') %>
-  port: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PORT') %>
-  password: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PASSWORD') %>
+  # username: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_USERNAME') %>
+  # host: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_HOST') %>
+  # port: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PORT') %>
+  # password: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PASSWORD') %>
 development:
   adapter: postgresql
   encoding: unicode
