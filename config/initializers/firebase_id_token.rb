@@ -6,7 +6,7 @@ end
 
 # 証明書を事前取得してキャッシュ
 begin
-  FirebaseIdToken::Certificates.request!
+  FirebaseIdToken::Certificates.request
 rescue => e
   Rails.logger.warn "証明書の取得に失敗しました: #{e.message}"
 end
