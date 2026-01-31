@@ -12,7 +12,7 @@ development:
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-  username: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_USERNAME') %>
-  host: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_HOST') %>
-  port: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PORT') %>
-  password: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PASSWORD') %>
+  # username: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_USERNAME') %>
+  # host: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_HOST') %>
+  # port: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PORT') %>
+  # password: <%= ENV.fetch('FAMDISH_BACKEND_RAILS_DATABASE_PASSWORD') %>
