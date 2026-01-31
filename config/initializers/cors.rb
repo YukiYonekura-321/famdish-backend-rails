@@ -8,7 +8,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "http://localhost:3000" # Next.jsのURL（ポート番号に合わせる）
+    origins ENV.fetch("FRONTEND_URL", "http://localhost:3000")
 
     resource "*",
       headers: :any,
