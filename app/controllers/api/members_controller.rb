@@ -9,7 +9,13 @@ module Api
 
     def show
       member = Member.find(params[:id])
-      render json: member.as_json(include: [:likes, :dislikes])
+      render json: member.as_json(
+        include: {
+          likes: { only: [:id, :name] },
+          dislikes: { only: [:id, :name] },
+          user: { only: [:id, :firebase_uid] }
+        }
+      )
     rescue ActiveRecord::RecordNotFound
       render_unauthorized("メンバーが見つかりません")
     end
@@ -17,12 +23,13 @@ module Api
     def create
       ActiveRecord::Base.transaction do
         # Family を作成
-        family = @current_user.family || Family.create!(name: params[:family][:name], user: @current_user)
+        family = Family.create!(name: params[:family][:name])
 
         # Member を作成
-        member = Member.new(member_params)
-        member.family = family  # familyを紐付け
-        member.save!
+        member = family.members.create!(member_params.merge(user: @current_user))
+
+        # current_userに紐付け
+        @current_user.update!(family: family, member: member)
 
         render json: member.as_json(include: [:likes, :dislikes, family: { only: [:id, :name] }]), status: :created
       rescue ActiveRecord::RecordInvalid => e
@@ -61,6 +68,26 @@ module Api
       head :no_content
     rescue ActiveRecord::RecordNotFound
       render_unauthorized("メンバーが見つかりません")
+    end
+
+    def me
+      family = @current_user.family
+      # current_member を事前ロード（likes/dislikes）して安全に返す
+      current_member = Member.includes(:likes, :dislikes).find_by(user_id: @current_user.id)
+      # current_member = @current_user.member
+
+      render json: {
+        family_name: family&.name,
+        username: current_member&.name,
+        member: current_member&.as_json(
+          only: [:id, :name],
+          # includeでN + 1問題を回避
+          include: {
+            likes: { only: [:id, :name] },
+            dislikes: { only: [:id, :name] }
+          }
+        )
+      }, status: :ok
     end
 
     private
