@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_05_224536) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,10 +24,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
 
   create_table "families", force: :cascade do |t|
     t.string "name"
-    t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_families_on_user_id"
   end
 
   create_table "likes", force: :cascade do |t|
@@ -42,7 +40,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "family_id"
+    t.bigint "family_id", null: false
+    t.bigint "user_id"
+    t.index ["family_id"], name: "index_members_on_family_id"
+    t.index ["user_id"], name: "index_members_on_user_id"
   end
 
   create_table "menus", force: :cascade do |t|
@@ -53,7 +54,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
   end
 
   create_table "suggestions", force: :cascade do |t|
-    t.integer "family_id"
+    t.bigint "family_id"
     t.json "requests"
     t.text "ai_raw_json"
     t.string "chosen_option"
@@ -66,9 +67,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_051138) do
     t.string "firebase_uid"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "family_id"
+    t.index ["family_id"], name: "index_users_on_family_id"
   end
 
   add_foreign_key "dislikes", "members"
-  add_foreign_key "families", "users"
   add_foreign_key "likes", "members"
+  add_foreign_key "members", "families"
+  add_foreign_key "members", "users"
+  add_foreign_key "users", "families"
 end
