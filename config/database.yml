@@ -5,7 +5,9 @@ production:
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
 development:
-  url: <%= ENV["DATABASE_URL"] %>
+  database: famdish_backend_rails_development
+  host: localhost
+  username: yuki
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
