@@ -21,16 +21,16 @@ module Api
     end
 
     def create
+      # flag を先に解釈してから member 作成に反映する
+      link_user = params.key?(:link_user) ? ActiveModel::Type::Boolean.new.cast(params[:link_user]) : true
       ActiveRecord::Base.transaction do
         # Family を作成
-        family = Family.create!(name: params[:family][:name])
+        family = Family.create!(name: params.dig(:family, :name))
 
-        # Member を作成
-        member = family.members.create!(member_params.merge(user: @current_user))
-
-        # デフォルトで current_user に紐付けする。フロントが link_user=false を渡せば紐付けしない
-        link_user = params.key?(:link_user) ? ActiveModel::Type::Boolean.new.cast(params[:link_user]) : true
-
+        # link_user が true のときだけ user を紐付ける
+        member_attrs = member_params
+        member_attrs = member_attrs.merge(user: @current_user) if link_user
+        member = family.members.create!(member_attrs)
         # current_userに紐付け
         @current_user.update!(family: family, member: member) if link_user && @current_user.present?
 
