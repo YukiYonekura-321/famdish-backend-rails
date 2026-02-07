@@ -33,15 +33,16 @@ class ApplicationController < ActionController::API
     begin
       verified_token = FirebaseIdToken::Signature.verify(token)
       Rails.logger.info "Decoded token payload: #{verified_token.inspect}"
-      if verified_token
-        @current_user = User.find_or_create_by(firebase_uid: verified_token["user_id"])
-      else
-        render_unauthorized("トークンの検証に失敗しました")
-      end
+    rescue FirebaseIdToken::Exceptions::NoCertificatesError,
+           FirebaseIdToken::Exceptions::CertificateExpiredError
+      # ← 証明書が無ければ自動取得
+      FirebaseIdToken::Certificates.request!
+      retry
     rescue => e
       Rails.logger.error "認証エラー: #{e.message}"
       render_unauthorized("認証中にエラーが発生しました")
     end
+    @current_user = User.find_or_create_by(firebase_uid: verified_token["user_id"])
   end
 
   def set_default_format

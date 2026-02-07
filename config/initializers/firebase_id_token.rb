@@ -11,9 +11,9 @@ FirebaseIdToken.configure do |config|
   # タイムアウトを少し長めに
 end
 
-# 証明書を事前取得してキャッシュ
-begin
-  FirebaseIdToken::Certificates.request
-rescue => e
-  Rails.logger.warn "証明書の取得に失敗しました: #{e.message}"
-end
+# # 証明書を事前取得してキャッシュ
+# begin
+#   FirebaseIdToken::Certificates.request
+# rescue => e
+#   Rails.logger.warn "証明書の取得に失敗しました: #{e.message}"
+# end
