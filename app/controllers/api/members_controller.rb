@@ -28,8 +28,11 @@ module Api
         # Member を作成
         member = family.members.create!(member_params.merge(user: @current_user))
 
+        # デフォルトで current_user に紐付けする。フロントが link_user=false を渡せば紐付けしない
+        link_user = params.key?(:link_user) ? ActiveModel::Type::Boolean.new.cast(params[:link_user]) : true
+
         # current_userに紐付け
-        @current_user.update!(family: family, member: member)
+        @current_user.update!(family: family, member: member) if link_user && @current_user.present?
 
         render json: member.as_json(include: [:likes, :dislikes, family: { only: [:id, :name] }]), status: :created
       rescue ActiveRecord::RecordInvalid => e
@@ -38,19 +41,7 @@ module Api
     end
 
     def update
-      # Rails.logger.info "params[:id] = #{params[:id].inspect}"
       member = Member.find(params[:id])
-      # Rails.logger.info "Found member: #{member.id}"
-      # 既存の likes/dislikes と 送られてきた likes/dislikes を比較して、差分を更新
-      # if member.likes.map(&:name).sort != (member_params[:likes_attributes] || []).map { |l| l[:name] }.sort
-      #   member.likes.destroy_all
-      # end
-      # if member.dislikes.map(&:name).sort != (member_params[:dislikes_attributes] || []).map { |d| d[:name] }.sort
-      #   member.dislikes.destroy_all
-      # end
-      # Rails.logger.info "member_params = #{member_params.inspect}"
-      # Rails.logger.info "member.likes = #{member.likes.inspect}"
-      # Rails.logger.info "member.dislikes = #{member.dislikes.inspect}"
       if member.update(member_params)
         Rails.logger.info "Member updated successfully"
         render json: member.as_json(include: [:likes, :dislikes]), status: :ok
@@ -99,9 +90,5 @@ module Api
         dislikes_attributes: [:id, :name, :_destroy]
       )
     end
-
-    # def member_params
-    #   params.require(:member).permit(:name, :likes, :dislikes)
-    # end
   end
 end
