@@ -34,7 +34,7 @@ module Api
     end
 
     def update
-      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find_by(id: params[:id]).find(params[:id])
+      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find(params[:id])
       
       return render_unauthorized("権限がありません") unless menu
 
@@ -48,7 +48,7 @@ module Api
     end 
 
     def destroy
-      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find_by(id: params[:id]).find(params[:id])
+      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find(params[:id])
       menu.destroy
       head :no_content
     rescue ActiveRecord::RecordNotFound
