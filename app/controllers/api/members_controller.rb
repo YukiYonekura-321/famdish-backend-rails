@@ -3,8 +3,16 @@ module Api
     before_action :authenticate_user!
 
     def index
-      members = Member.all
-      render json: members.as_json(include: [:likes, :dislikes])
+      family = @current_user.family
+      members = family ? family.members.includes(:likes, :dislikes) : Member.none
+      
+      render json: members.as_json(
+        only: [:id, :name],
+        include: {
+          likes: { only: [:id, :name]},
+          dislikes: { only: [:id, :name]}
+        }
+      ), status: :ok
     end
 
     def show
