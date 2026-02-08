@@ -13,5 +13,14 @@ Rails.application.routes.draw do
         post :feedback
       end
     end
+
+    # 招待機能
+    resources :invitations, only: [:create], param: :token do
+      member do
+        post :accept  # POST /api/invitations/:token/accept
+      end
+    end
+    # GET /api/invitations/:token（show は認証不要なので別途定義）
+    get "invitations/:token", to: "invitations#show", as: :invitation_show
   end
 end
