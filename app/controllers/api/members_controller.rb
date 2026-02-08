@@ -16,7 +16,16 @@ module Api
     end
 
     def show
-      member = Member.find(params[:id])
+      member = Member.where(family_id: @current_user.family_id)
+                     .includes(:likes, :dislikes)
+                     .find_by(id: params[:id])
+
+      return render_unauthorized("権限がありません") unless member
+      # user_id がある場合は本人のみ、無い場合は同じ family なら許可
+      if member.user_id.present? && member.user_id != @current_user.id
+        return render_unauthorized("権限がありません")
+      end
+
       render json: member.as_json(
         include: {
           likes: { only: [:id, :name] },
@@ -24,8 +33,6 @@ module Api
           user: { only: [:id, :firebase_uid] }
         }
       )
-    rescue ActiveRecord::RecordNotFound
-      render_unauthorized("メンバーが見つかりません")
     end
 
     def create
@@ -49,7 +56,15 @@ module Api
     end
 
     def update
-      member = Member.find(params[:id])
+      member = Member.where(family_id: @current_user.family_id)
+                     .find_by(id: params[:id])
+
+      return render_unauthorized("権限がありません") unless member
+      # user_id がある場合は本人のみ、無い場合は同じ family なら許可
+      if member.user_id.present? && member.user_id != @current_user.id
+        return render_unauthorized("権限がありません")
+      end
+
       if member.update(member_params)
         Rails.logger.info "Member updated successfully"
         render json: member.as_json(include: [:likes, :dislikes]), status: :ok
@@ -57,16 +72,20 @@ module Api
         Rails.logger.error "Member update failed: #{member.errors.full_messages}"
         render json: { errors: member.errors.full_messages }, status: :unprocessable_entity
       end
-    rescue ActiveRecord::RecordNotFound
-      render_unauthorized("メンバーが見つかりません")
     end
 
     def destroy
-      member = Member.find(params[:id])
+      member = Member.where(family_id: @current_user.family_id)
+                     .find_by(id: params[:id])
+
+      return render_unauthorized("権限がありません") unless member
+      # user_id がある場合は本人のみ、無い場合は同じ family なら許可
+      if member.user_id.present? && member.user_id != @current_user.id
+        return render_unauthorized("権限がありません")
+      end
+
       member.destroy
       head :no_content
-    rescue ActiveRecord::RecordNotFound
-      render_unauthorized("メンバーが見つかりません")
     end
 
     def me
