@@ -39,8 +39,13 @@ module Api
       # flag を先に解釈してから member 作成に反映する
       link_user = params.key?(:link_user) ? ActiveModel::Type::Boolean.new.cast(params[:link_user]) : true
       ActiveRecord::Base.transaction do
-        # Family を作成
-        family = Family.create!(name: params.dig(:family, :name))
+        # family_id が params に含まれている場合は既存ファミリーを使用、無い場合は新規作成
+        if params[:family_id].present?
+          family = Family.find_by(id: params[:family_id])
+          return render json: { error: "ファミリーが見つかりません" }, status: :bad_request unless family
+        else
+          family = Family.create!(name: params.dig(:family, :name))
+        end
 
         # link_user が true のときだけ user を紐付ける
         member_attrs = member_params

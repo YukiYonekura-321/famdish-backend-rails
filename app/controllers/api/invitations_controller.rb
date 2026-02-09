@@ -74,6 +74,7 @@ module Api
 
       render json: {
         message: "招待を受諾しました",
+        family_id: invitation.family.id,
         family_name: invitation.family.name
       }, status: :ok
     rescue ActiveRecord::RecordInvalid => e
