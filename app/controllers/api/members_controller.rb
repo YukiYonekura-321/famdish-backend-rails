@@ -10,30 +10,31 @@ module Api
         only: [:id, :name],
         include: {
           likes: { only: [:id, :name]},
-          dislikes: { only: [:id, :name]}
+          dislikes: { only: [:id, :name]},
+          user: { only: [:id, :firebase_uid]}
         }
       ), status: :ok
     end
 
-    def show
-      member = Member.where(family_id: @current_user.family_id)
-                     .includes(:likes, :dislikes)
-                     .find_by(id: params[:id])
+    # def show
+    #   member = Member.where(family_id: @current_user.family_id)
+    #                  .includes(:likes, :dislikes)
+    #                  .find_by(id: params[:id])
 
-      return render_unauthorized("権限がありません") unless member
-      # user_id がある場合は本人のみ、無い場合は同じ family なら許可
-      if member.user_id.present? && member.user_id != @current_user.id
-        return render_unauthorized("権限がありません")
-      end
+    #   return render_unauthorized("権限がありません") unless member
+    #   # user_id がある場合は本人のみ、無い場合は同じ family なら許可
+    #   if member.user_id.present? && member.user_id != @current_user.id
+    #     return render_unauthorized("権限がありません")
+    #   end
 
-      render json: member.as_json(
-        include: {
-          likes: { only: [:id, :name] },
-          dislikes: { only: [:id, :name] },
-          user: { only: [:id, :firebase_uid] }
-        }
-      )
-    end
+    #   render json: member.as_json(
+    #     include: {
+    #       likes: { only: [:id, :name] },
+    #       dislikes: { only: [:id, :name] },
+    #       user: { only: [:id, :firebase_uid] }
+    #     }
+    #   )
+    # end
 
     def create
       # flag を先に解釈してから member 作成に反映する
