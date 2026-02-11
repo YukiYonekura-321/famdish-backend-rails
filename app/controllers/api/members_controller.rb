@@ -100,6 +100,7 @@ module Api
       # current_member = @current_user.member
 
       render json: {
+        family_id: family&.id,
         family_name: family&.name,
         username: current_member&.name,
         member: current_member&.as_json(
