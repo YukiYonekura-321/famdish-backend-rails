@@ -9,7 +9,12 @@ module Api
       # family に属するメンバーが投稿したメニューのみ取得
       menus = Menu.joins(:member).where(members: { family_id: family.id }).includes(:member)
 
-      render json: menus, status: :ok
+      render json: menus.as_json(
+        only: [:id, :name],
+        include: {
+          member: { only: [:id, :name] }
+        }
+      ), status: :ok
     end
 
     def show
