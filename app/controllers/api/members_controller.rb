@@ -4,14 +4,15 @@ module Api
 
     def index
       family = @current_user.family
-      members = family ? family.members.includes(:likes, :dislikes) : Member.none
+      members = family ? family.members.includes(:likes, :dislikes, :menus) : Member.none
       
       render json: members.as_json(
         only: [:id, :name],
         include: {
           likes: { only: [:id, :name]},
           dislikes: { only: [:id, :name]},
-          user: { only: [:id, :firebase_uid]}
+          user: { only: [:id, :firebase_uid]},
+          menus: { only: [:id, :name]},
         }
       ), status: :ok
     end
