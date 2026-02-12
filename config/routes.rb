@@ -14,6 +14,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # Good テーブル確認
+    get "goods/check", to: "goods#check"
+
     # 招待機能
     resources :invitations, only: [:create], param: :token do
       member do
