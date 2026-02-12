@@ -15,6 +15,16 @@ module Api
       }, status: :ok
     end
 
+    # GET /api/goods/:id/count or /api/goods/count?menu_id=1
+    # 指定したメニューのいいね数を返す
+    def count
+      menu_id = params[:id] || params[:menu_id]
+      return render json: { error: "menu_id が必要です" }, status: :bad_request unless menu_id.present?
+
+      count = Good.where(menu_id: menu_id).count
+      render json: { menu_id: menu_id.to_i, count: count }, status: :ok
+    end
+
     # POST /api/goods
     # body: { good: { menu_id: 1 } }
     def create

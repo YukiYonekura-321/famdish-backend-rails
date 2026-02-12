@@ -17,8 +17,12 @@ Rails.application.routes.draw do
     # Good テーブル確認
     get "goods/check", to: "goods#check"
 
-    # Good の作成/削除
-    resources :goods, only: [:create, :destroy]
+    # Good の作成/削除/カウント
+    resources :goods, only: [:create, :destroy] do
+      collection do
+        get :count
+      end
+    end
 
     # 招待機能
     resources :invitations, only: [:create], param: :token do
