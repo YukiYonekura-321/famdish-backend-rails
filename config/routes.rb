@@ -15,7 +15,11 @@ Rails.application.routes.draw do
     end
 
     # 担当者設定
-    post "families/assign_cook", to: "families#assign_cook"
+    resources :families, only: [:index] do
+      collection do
+        post :assign_cook
+      end
+    end
 
     # Good テーブル確認
     get "goods/check", to: "goods#check"
