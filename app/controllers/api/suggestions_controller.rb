@@ -1,7 +1,19 @@
 class Api::SuggestionsController < ApplicationController
   wrap_parameters false
+  before_action :authenticate_user!
+  
   def create
-    family_id = @current_user.family&.id
+    current_member = @current_user.member
+    family = @current_user.family
+
+    # バリデーション：今日の料理担当者のみ献立提案を作成できる
+    return render json: { error: "家族が見つかりません" }, status: :bad_request unless family
+    return render json: { error: "メンバーが見つかりません" }, status: :bad_request unless current_member
+    unless family.today_cook_id == current_member.id
+      return render json: { error: "今日の料理担当者ではありません" }, status: :forbidden
+    end
+
+    family_id = family.id
 
     # フロントから渡されるパラメータ
     requests      = params[:requests] # ["カレー","サラダ","パスタ","肉"]
@@ -36,7 +48,8 @@ class Api::SuggestionsController < ApplicationController
     suggestion = Suggestion.create!(
       family_id: family_id,
       requests: requests,
-      ai_raw_json: ai_result
+      ai_raw_json: ai_result,
+      proposer: current_member.id
     )
 
     # そのまま返す
