@@ -6,6 +6,8 @@ module Api
     # body: { member_id: 5 }
     # プルダウンで選んだメンバーを今日の料理担当者に設定する
     def assign_cook
+      Rails.logger.info "assign_cook called with params: #{params.inspect}"
+      
       family = @current_user.family
       return render json: { error: "家族が見つかりません" }, status: :bad_request unless family
 
