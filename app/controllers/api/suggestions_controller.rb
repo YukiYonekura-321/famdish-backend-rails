@@ -28,15 +28,15 @@ class Api::SuggestionsController < ApplicationController
   # GET /api/suggestions
   # 全家族の献立（chosen_option: "ok"）を返す（他の家族の献立も参考に）
   def index
-    suggestions = Suggestion.where(chosen_option: "ok")
+    suggestions = Suggestion.includes(:family)
+                           .where(chosen_option: "ok")
                            .order(created_at: :desc)
 
     render json: suggestions.map { |s|
-      family = Family.find_by(id: s.family_id)
       {
         id: s.id,
         family_id: s.family_id,
-        family_name: family&.name,
+        family_name: s.family&.name,
         requests: s.requests,
         ai_raw_json: JSON.parse(s.ai_raw_json),
         chosen_option: s.chosen_option,
