@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_12_224619) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_14_075857) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_224619) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "today_cook_id"
   end
 
   create_table "goods", force: :cascade do |t|
@@ -33,6 +34,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_224619) do
     t.integer "menu_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "suggestion_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -93,6 +95,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_12_224619) do
   end
 
   add_foreign_key "dislikes", "members"
+  add_foreign_key "families", "members", column: "today_cook_id"
   add_foreign_key "invitations", "families"
   add_foreign_key "likes", "members"
   add_foreign_key "members", "families"
