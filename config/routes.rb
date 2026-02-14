@@ -9,6 +9,10 @@ Rails.application.routes.draw do
     end
     resources :likes, only: [ :index ]
     resources :suggestions, only: [:create, :update] do
+      collection do
+        get :check
+        get :index
+      end
       member do
         post :feedback
       end
