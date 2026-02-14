@@ -32,9 +32,11 @@ class Api::SuggestionsController < ApplicationController
                            .order(created_at: :desc)
 
     render json: suggestions.map { |s|
+      family = Family.find_by(id: s.family_id)
       {
         id: s.id,
         family_id: s.family_id,
+        family_name: family&.name,
         requests: s.requests,
         ai_raw_json: JSON.parse(s.ai_raw_json),
         chosen_option: s.chosen_option,
