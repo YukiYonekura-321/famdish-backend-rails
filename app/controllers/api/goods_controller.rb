@@ -66,9 +66,9 @@ module Api
     # POST /api/goods/create_suggestion?suggestion_id=1
     # or body: { good: { suggestion_id: 1 } }
     def create_suggestion
-      Rails.logger.info "create_suggestion - params: #{params.inspect}"
-      suggestion_id = params.dig(:good, :suggestion_id) || params[:suggestion_id]
-      Rails.logger.info "create_suggestion - suggestion_id: #{suggestion_id.inspect}"
+      suggestion_id = params.dig(:good, :suggestion_id) || 
+                      params[:suggestion_id] || 
+                      params.dig(:params, :suggestion_id)
       
       return render json: { error: "suggestion_id が必要です" }, status: :bad_request unless suggestion_id.present?
 
