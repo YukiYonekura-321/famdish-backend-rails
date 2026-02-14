@@ -66,7 +66,9 @@ module Api
     # POST /api/goods/create_suggestion
     # body: { good: { suggestion_id: 1 } }
     def create_suggestion
-      suggestion_id = params.dig(:good, :suggestion_id) || params[:suggestion_id]
+      suggestion_id = params[:suggestion_id]
+      Rails.logger.info "create_suggestion - suggestion_id: #{suggestion_id.inspect}, user_id: #{@current_user.id}"
+      
       return render json: { error: "suggestion_id が必要です" }, status: :bad_request unless suggestion_id.present?
 
       good = Good.find_by(user_id: @current_user.id, suggestion_id: suggestion_id)
@@ -75,7 +77,11 @@ module Api
       good = Good.create!(user_id: @current_user.id, suggestion_id: suggestion_id)
       render json: { id: good.id }, status: :created
     rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error "create_suggestion validation error: #{e.record.errors.full_messages.inspect}"
       render json: { error: e.record.errors.full_messages.join(", ") }, status: :unprocessable_entity
+    rescue => e
+      Rails.logger.error "create_suggestion error: #{e.class} - #{e.message}"
+      raise
     end
 
     # ── 共通 ──
