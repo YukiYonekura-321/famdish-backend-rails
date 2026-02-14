@@ -1,7 +1,30 @@
 class Api::SuggestionsController < ApplicationController
   wrap_parameters false
   before_action :authenticate_user!
-  
+
+  # GET /api/suggestions/check
+  # 指定された家族の過去の献立（chosen_option: "ok"）を全て返す
+  def check
+    family = @current_user.family
+    return render json: [], status: :ok unless family
+
+    suggestions = Suggestion.where(family_id: family.id, chosen_option: "ok")
+                           .order(created_at: :desc)
+
+    render json: suggestions.map { |s|
+      {
+        id: s.id,
+        family_id: s.family_id,
+        requests: s.requests,
+        ai_raw_json: JSON.parse(s.ai_raw_json),
+        chosen_option: s.chosen_option,
+        feedback: s.feedback,
+        proposer_id: s.proposer,
+        created_at: s.created_at
+      }
+    }, status: :ok
+  end
+
   def create
     current_member = @current_user.member
     family = @current_user.family
