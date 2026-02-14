@@ -25,15 +25,19 @@ Rails.application.routes.draw do
       end
     end
 
-    # Good テーブル確認
+    # Good（menu_id 系）
     get "goods/check", to: "goods#check"
-
-    # Good の作成/削除/カウント
     resources :goods, only: [:create, :destroy] do
       collection do
         get :count
       end
     end
+
+    # Good（suggestion_id 系）
+    get "goods/check_suggestion", to: "goods#check_suggestion"
+    get "goods/count_suggestion", to: "goods#count_suggestion"
+    post "goods/create_suggestion", to: "goods#create_suggestion"
+    delete "goods/destroy_suggestion/:id", to: "goods#destroy_suggestion"
 
     # 招待機能
     resources :invitations, only: [:create], param: :token do
