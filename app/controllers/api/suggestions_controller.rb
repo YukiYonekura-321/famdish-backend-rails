@@ -25,6 +25,27 @@ class Api::SuggestionsController < ApplicationController
     }, status: :ok
   end
 
+  # GET /api/suggestions
+  # 全家族の献立（chosen_option: "ok"）を返す（他の家族の献立も参考に）
+  def index
+    suggestions = Suggestion.where(chosen_option: "ok")
+                           .order(created_at: :desc)
+
+    render json: suggestions.map { |s|
+      {
+        id: s.id,
+        family_id: s.family_id,
+        requests: s.requests,
+        ai_raw_json: JSON.parse(s.ai_raw_json),
+        chosen_option: s.chosen_option,
+        feedback: s.feedback,
+        proposer_id: s.proposer,
+        created_at: s.created_at
+      }
+    }, status: :ok
+  end
+  
+
   def create
     current_member = @current_user.member
     family = @current_user.family
