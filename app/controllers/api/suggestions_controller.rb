@@ -62,17 +62,24 @@ class Api::SuggestionsController < ApplicationController
     family_id = family.id
 
     # フロントから渡されるパラメータ
-    requests      = params[:requests] # ["カレー","サラダ","パスタ","肉"]
-    id   = params[:sgId] || {}
+    requests     = params[:requests]     # ["カレー","サラダ","パスタ","肉"]
+    id           = params[:sgId] || {}
+    servings     = params[:servings]     # 何人分か（例: 4）
+    budget       = params[:budget]       # 希望する予算（例: 1500）
+    cooking_time = params[:cooking_time] # 希望する調理時間（例: 30）
+    days         = (params[:days].to_i > 0) ? params[:days].to_i : 1  # 何日分か（デフォルト1）
+
+    constraints = {
+      servings: servings,
+      budget: budget,
+      cooking_time: cooking_time
+    }
+
+    # 過去のフィードバック取得
+    feedback = id.present? ? Suggestion.find(id).feedback : {}
 
     # OpenAIへ投げるプロンプトを作成
-    if id.present?
-      feedback = Suggestion.find(id).feedback
-      prompt = build_prompt(family_id, requests, feedback)
-    else
-      prompt = build_prompt(family_id, requests, {})
-
-    end
+    prompt = build_prompt(family_id, requests, feedback, constraints, days)
 
     # OpenAI API 呼び出し
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
@@ -117,12 +124,28 @@ class Api::SuggestionsController < ApplicationController
   private
 
   # GPTに渡すプロンプト生成
-  def build_prompt(family_id, requests, feedback)
+  def build_prompt(family_id, requests, feedback, constraints = {}, days = 1)
     members = Member.where(family_id: family_id)
+    stocks  = Stock.where(family_id: family_id)
 
-    likes  = members.map { |m| { name: m.name, likes: m.likes } }
+    likes    = members.map { |m| { name: m.name, likes: m.likes } }
     dislikes = members.map { |m| { name: m.name, dislikes: m.dislikes } }
+    stock_list = stocks.map { |s| { name: s.name, quantity: s.quantity.to_f, unit: s.unit } }
 
+    # 制約条件テキスト生成
+    constraint_lines = []
+    constraint_lines << "・#{constraints[:servings]}人分" if constraints[:servings].present?
+    constraint_lines << "・予算: #{constraints[:budget]}円以内" if constraints[:budget].present?
+    constraint_lines << "・調理時間: #{constraints[:cooking_time]}分以内" if constraints[:cooking_time].present?
+
+    if days > 1
+      build_multi_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines, days)
+    else
+      build_single_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines)
+    end
+  end
+
+  def build_single_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines)
     <<~PROMPT
     家族構成と今日のリクエストをもとに、献立案を1つJSONで返してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
@@ -130,6 +153,12 @@ class Api::SuggestionsController < ApplicationController
     ▼家族の好み
     好き：#{likes.to_json}
     嫌い：#{dislikes.to_json}
+
+    ▼冷蔵庫の在庫（なるべく在庫を活用してください）
+    #{stock_list.to_json}
+
+    ▼制約条件
+    #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
 
     ▼今日のリクエスト
     #{requests.to_json}
@@ -143,8 +172,45 @@ class Api::SuggestionsController < ApplicationController
       "reason": "string",
       "time": 30,
       "ingredients": ["材料1", "材料2"],
-      "requests": #{requests}
+      "requests": #{requests.to_json}
     }
+    PROMPT
+  end
+
+  def build_multi_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines, days)
+    <<~PROMPT
+    家族構成とリクエストをもとに、#{days}日分の献立案をJSONの配列で返してください。
+    出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
+    #{days}日分の献立が重複しないよう、バリエーション豊かに提案してください。
+    在庫を考慮し、#{days}日間で効率的に使い切れるよう工夫してください。
+
+    ▼家族の好み
+    好き：#{likes.to_json}
+    嫌い：#{dislikes.to_json}
+
+    ▼冷蔵庫の在庫（なるべく在庫を活用してください）
+    #{stock_list.to_json}
+
+    ▼制約条件（1日あたり）
+    #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
+
+    ▼リクエスト
+    #{requests.to_json}
+
+    ▼過去のフィードバック
+    #{feedback.to_json}
+
+    ▼返す形式（厳守）#{days}個の要素を持つJSON配列
+    [
+      {
+        "day": 1,
+        "title": "string",
+        "reason": "string",
+        "time": 30,
+        "ingredients": ["材料1", "材料2"],
+        "requests": #{requests.to_json}
+      }
+    ]
     PROMPT
   end
 end
