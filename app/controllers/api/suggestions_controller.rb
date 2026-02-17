@@ -167,10 +167,37 @@ class Api::SuggestionsController < ApplicationController
     #{feedback.to_json}
 
     ▼返す形式（厳守）
+    もし制約条件を満たせない場合は、以下のいずれかを返してください。
+    
+    【在庫がない場合】
+    {
+      "title": "料理は作れません",
+      "reason": "在庫がありません",
+      "ingredients": ["必要な材料1", "必要な材料2"],
+      "requests": #{requests.to_json}
+    }
+    
+    【予算が足りない場合】
+    {
+      "title": "料理は作れません",
+      "reason": "予算が〇〇円足りません",
+      "ingredients": ["必要な材料1", "必要な材料2"],
+      "requests": #{requests.to_json}
+    }
+    
+    【調理時間が足りない場合】
+    {
+      "title": "料理は作れません",
+      "reason": "調理時間が〇〇分足りません",
+      "ingredients": ["必要な材料1", "必要な材料2"],
+      "requests": #{requests.to_json}
+    }
+    
+    【制約条件をすべて満たす場合】
     {
       "title": "string",
       "reason": "string",
-      "time": 30,
+      "time": この料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
       "ingredients": ["材料1", "材料2"],
       "requests": #{requests.to_json}
     }
@@ -200,13 +227,57 @@ class Api::SuggestionsController < ApplicationController
     ▼過去のフィードバック
     #{feedback.to_json}
 
-    ▼返す形式（厳守）#{days}個の要素を持つJSON配列
+    ▼返す形式（厳守）
+    もし制約条件を満たせない場合は、以下のいずれかを返してください。
+    
+    【在庫がない場合】
+    [
+      {
+        "day": 1,
+        "title": "料理は作れません",
+        "reason": "在庫がありません",
+        "ingredients": ["必要な材料1", "必要な材料2"],
+        "requests": #{requests.to_json}
+      }
+    ]
+    
+    【予算が足りない場合】
+    [
+      {
+        "day": 1,
+        "title": "料理は作れません",
+        "reason": "予算が〇〇円足りません",
+        "ingredients": ["必要な材料1", "必要な材料2"],
+        "requests": #{requests.to_json}
+      }
+    ]
+    
+    【調理時間が足りない場合】
+    [
+      {
+        "day": 1,
+        "title": "料理は作れません",
+        "reason": "調理時間が〇〇分足りません",
+        "ingredients": ["必要な材料1", "必要な材料2"],
+        "requests": #{requests.to_json}
+      }
+    ]
+    
+    【制約条件をすべて満たす場合】#{days}日分の異なる献立を返してください
     [
       {
         "day": 1,
         "title": "string",
         "reason": "string",
-        "time": 30,
+        "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
+        "ingredients": ["材料1", "材料2"],
+        "requests": #{requests.to_json}
+      },
+      {
+        "day": 2,
+        "title": "string",
+        "reason": "string",
+        "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
         "ingredients": ["材料1", "材料2"],
         "requests": #{requests.to_json}
       }
