@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       get :me, on: :collection
     end
     resources :likes, only: [ :index ]
+    resources :stocks, only: [ :index, :create, :update, :destroy ]
     resources :suggestions, only: [:create, :update] do
       collection do
         get :check
