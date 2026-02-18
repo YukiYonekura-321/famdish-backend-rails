@@ -62,7 +62,8 @@ class Api::SuggestionsController < ApplicationController
     family_id = family.id
 
     # フロントから渡されるパラメータ
-    requests     = params[:requests]     # ["カレー","サラダ","パスタ","肉"]
+    # requests は必須ではないため、未指定の場合は空配列にする
+    requests     = params[:requests] || []     # ["カレー","サラダ","パスタ","肉"]
     id           = params[:sgId] || {}
     servings     = params[:servings]     # 何人分か（例: 4）
     budget       = params[:budget]       # 希望する予算（例: 1500）
@@ -125,6 +126,8 @@ class Api::SuggestionsController < ApplicationController
 
   # GPTに渡すプロンプト生成
   def build_prompt(family_id, requests, feedback, constraints = {}, days = 1)
+    # requests が nil の場合に備えて空配列で初期化
+    requests ||= []
     members = Member.where(family_id: family_id)
     stocks  = Stock.where(family_id: family_id)
 
@@ -146,6 +149,11 @@ class Api::SuggestionsController < ApplicationController
   end
 
   def build_single_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines)
+    # requests が空の場合は明示的な指示を追加
+    requests ||= []
+    request_display = requests.present? ? requests.to_json : "[]"
+    request_instruction = requests.present? ? "" : "※希望の献立が未指定のため、家族の好みと在庫を優先して提案してください。"
+
     <<~PROMPT
     家族構成と今日のリクエストをもとに、献立案を1つJSONで返してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
@@ -161,7 +169,8 @@ class Api::SuggestionsController < ApplicationController
     #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
 
     ▼今日のリクエスト
-    #{requests.to_json}
+    #{request_display}
+    #{request_instruction}
 
     ▼過去のフィードバック
     #{feedback.to_json}
@@ -174,7 +183,7 @@ class Api::SuggestionsController < ApplicationController
       "title": "料理は作れません",
       "reason": "在庫がありません",
       "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{requests.to_json}
+      "requests": #{request_display}
     }
     
     【予算が足りない場合】
@@ -182,7 +191,7 @@ class Api::SuggestionsController < ApplicationController
       "title": "料理は作れません",
       "reason": "予算が〇〇円足りません",
       "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{requests.to_json}
+      "requests": #{request_display}
     }
     
     【調理時間が足りない場合】
@@ -190,7 +199,7 @@ class Api::SuggestionsController < ApplicationController
       "title": "料理は作れません",
       "reason": "調理時間が〇〇分足りません",
       "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{requests.to_json}
+      "requests": #{request_display}
     }
     
     【制約条件をすべて満たす場合】
@@ -199,12 +208,17 @@ class Api::SuggestionsController < ApplicationController
       "reason": "string",
       "time": この料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
       "ingredients": ["材料1", "材料2"],
-      "requests": #{requests.to_json}
+      "requests": #{request_display}
     }
     PROMPT
   end
 
   def build_multi_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines, days)
+    # requests が空の場合は明示的な指示を追加
+    requests ||= []
+    request_display = requests.present? ? requests.to_json : "[]"
+    request_instruction = requests.present? ? "" : "※希望の献立が未指定のため、家族の好みと在庫を優先して提案してください。"
+
     <<~PROMPT
     家族構成とリクエストをもとに、#{days}日分の献立案をJSONの配列で返してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
@@ -222,7 +236,8 @@ class Api::SuggestionsController < ApplicationController
     #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
 
     ▼リクエスト
-    #{requests.to_json}
+    #{request_display}
+    #{request_instruction}
 
     ▼過去のフィードバック
     #{feedback.to_json}
@@ -237,7 +252,7 @@ class Api::SuggestionsController < ApplicationController
         "title": "料理は作れません",
         "reason": "在庫がありません",
         "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{requests.to_json}
+        "requests": #{request_display}
       }
     ]
     
@@ -248,7 +263,7 @@ class Api::SuggestionsController < ApplicationController
         "title": "料理は作れません",
         "reason": "予算が〇〇円足りません",
         "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{requests.to_json}
+        "requests": #{request_display}
       }
     ]
     
@@ -259,7 +274,7 @@ class Api::SuggestionsController < ApplicationController
         "title": "料理は作れません",
         "reason": "調理時間が〇〇分足りません",
         "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{requests.to_json}
+        "requests": #{request_display}
       }
     ]
     
@@ -271,7 +286,7 @@ class Api::SuggestionsController < ApplicationController
         "reason": "string",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
         "ingredients": ["材料1", "材料2"],
-        "requests": #{requests.to_json}
+        "requests": #{request_display}
       },
       {
         "day": 2,
@@ -279,7 +294,7 @@ class Api::SuggestionsController < ApplicationController
         "reason": "string",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
         "ingredients": ["材料1", "材料2"],
-        "requests": #{requests.to_json}
+        "requests": #{request_display}
       }
     ]
     PROMPT
