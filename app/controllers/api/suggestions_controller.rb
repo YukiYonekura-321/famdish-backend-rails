@@ -217,7 +217,7 @@ class Api::SuggestionsController < ApplicationController
     【制約条件をすべて満たす場合】
     {
       "title": "string",
-      "reason": "string",
+      "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
       "time": この料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
       "ingredients": ["材料1", "材料2"],
       "requests": #{request_display}
@@ -326,7 +326,7 @@ class Api::SuggestionsController < ApplicationController
       {
         "day": 1,
         "title": "string",
-        "reason": "string",
+        "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
         "ingredients": ["材料1", "材料2"],
         "requests": #{request_display}
@@ -334,7 +334,7 @@ class Api::SuggestionsController < ApplicationController
       {
         "day": 2,
         "title": "string",
-        "reason": "string",
+        "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
         "ingredients": ["材料1", "材料2"],
         "requests": #{request_display}
