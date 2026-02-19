@@ -15,7 +15,6 @@ class Api::SuggestionsController < ApplicationController
       {
         id: s.id,
         family_id: s.family_id,
-        requests: s.requests,
         ai_raw_json: JSON.parse(s.ai_raw_json),
         chosen_option: s.chosen_option,
         feedback: s.feedback,
@@ -37,7 +36,6 @@ class Api::SuggestionsController < ApplicationController
         id: s.id,
         family_id: s.family_id,
         family_name: s.family&.name,
-        requests: s.requests,
         ai_raw_json: JSON.parse(s.ai_raw_json),
         chosen_option: s.chosen_option,
         feedback: s.feedback,
@@ -62,8 +60,6 @@ class Api::SuggestionsController < ApplicationController
     family_id = family.id
 
     # フロントから渡されるパラメータ
-    # requests は必須ではないため、未指定の場合は空配列にする
-    requests     = params[:requests] || []     # ["カレー","サラダ","パスタ","肉"]
     id           = params[:sgId] || {}
     servings     = params[:servings]     # 何人分か（例: 4）
     budget       = params[:budget]       # 希望する予算（例: 1500）
@@ -80,7 +76,7 @@ class Api::SuggestionsController < ApplicationController
     feedback = id.present? ? Suggestion.find(id).feedback : {}
 
     # OpenAIへ投げるプロンプトを作成
-    prompt = build_prompt(family_id, requests, feedback, constraints, days)
+    prompt = build_prompt(family_id, feedback, constraints, days)
 
     # OpenAI API 呼び出し
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
@@ -101,7 +97,6 @@ class Api::SuggestionsController < ApplicationController
     # suggestionsテーブルに保存
     suggestion = Suggestion.create!(
       family_id: family_id,
-      requests: requests,
       ai_raw_json: ai_result,
       proposer: current_member.id
     )
@@ -125,9 +120,7 @@ class Api::SuggestionsController < ApplicationController
   private
 
   # GPTに渡すプロンプト生成
-  def build_prompt(family_id, requests, feedback, constraints = {}, days = 1)
-    # requests が nil の場合に備えて空配列で初期化
-    requests ||= []
+  def build_prompt(family_id, feedback, constraints = {}, days = 1)
     members = Member.where(family_id: family_id)
     stocks  = Stock.where(family_id: family_id)
 
@@ -142,25 +135,16 @@ class Api::SuggestionsController < ApplicationController
     constraint_lines << "・調理時間: #{constraints[:cooking_time]}分以内" if constraints[:cooking_time].present?
 
     if days > 1
-      build_multi_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines, days)
+      build_multi_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines, days)
     else
-      build_single_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines)
+      build_single_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines)
     end
   end
 
-  def build_single_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines)
-    # requests が空の場合は明示的な指示を追加
-    requests ||= []
-    request_display = requests.present? ? requests.to_json : "[]"
-    # リクエストの優先度を明示的に指示
-    request_instruction = if requests.present?
-                            "※リクエストされた料理を最優先で提案してください。在庫や制約の範囲内で、リクエスト通りの料理を再現してください。"
-                          else
-                            "※希望の献立が未指定のため、家族の好みと在庫を優先して提案してください。"
-                          end
-
+  def build_single_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines)
     <<~PROMPT
-    家族構成と制約条件をもとに、献立案を1つJSONで返してください。
+    家族の好み・在庫・制約条件をもとに、献立案を1つJSONで返してください。
+    家族の好みと在庫を優先して提案してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
 
     【判断ルール】
@@ -180,64 +164,47 @@ class Api::SuggestionsController < ApplicationController
     ▼制約条件
     #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
 
-    ▼今日のリクエスト
-    #{request_display}
-    #{request_instruction}
-
     ▼過去のフィードバック
     #{feedback.to_json}
 
     ▼返す形式（厳守）
     制約条件を検証し、主要食材の不足・予算超過・時間超過で献立が不可能な場合のみ、以下のいずれかを返してください。
-    
+
     【在庫が足りない場合】
     {
       "title": "料理は作れません",
       "reason": "在庫がありません",
-      "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{request_display}
+      "ingredients": ["必要な材料1", "必要な材料2"]
     }
-    
+
     【予算が足りない場合】
     {
       "title": "料理は作れません",
       "reason": "予算が〇〇円足りません",
-      "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{request_display}
+      "ingredients": ["必要な材料1", "必要な材料2"]
     }
-    
+
     【調理時間が足りない場合】
     {
       "title": "料理は作れません",
       "reason": "調理時間が〇〇分足りません",
-      "ingredients": ["必要な材料1", "必要な材料2"],
-      "requests": #{request_display}
+      "ingredients": ["必要な材料1", "必要な材料2"]
     }
-    
+
     【制約条件をすべて満たす場合】
     {
       "title": "string",
-      "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
+      "reason": "具体的な理由（例：「〇〇さんが好きなので」「〇〇の在庫を活用して」など、家族の好みや在庫に基づいた具体的な理由。「制約条件を満たしています」のような当たり前の理由は禁止）",
       "time": この料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
-      "ingredients": ["材料1", "材料2"],
-      "requests": #{request_display}
+      "ingredients": ["材料1", "材料2"]
     }
     PROMPT
   end
 
-  def build_multi_day_prompt(likes, dislikes, stock_list, requests, feedback, constraint_lines, days)
-    # requests が空の場合は明示的な指示を追加
-    requests ||= []
-    request_display = requests.present? ? requests.to_json : "[]"
-    # リクエストの優先度を明示的に指示
-    request_instruction = if requests.present?
-                            "※リクエストされた料理を最優先で提案してください。在庫や制約の範囲内で、リクエスト通りの料理を#{days}日分のバリエーション含め再現してください。"
-                          else
-                            "※希望の献立が未指定のため、家族の好みと在庫を優先して提案してください。"
-                          end
-
+  def build_multi_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines, days)
     <<~PROMPT
-    家族構成と制約条件をもとに、#{days}日分の献立案をJSONの配列で返してください。
+    家族の好み・在庫・制約条件をもとに、#{days}日分の献立案をJSONの配列で返してください。
+    家族の好みと在庫を優先して提案してください。
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
 
     【判断ルール】
@@ -259,85 +226,57 @@ class Api::SuggestionsController < ApplicationController
     ▼制約条件（1日あたり）
     #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
 
-    ▼リクエスト
-    #{request_display}
-    #{request_instruction}
-    ・塩、砂糖、醤油、味噌、酒、みりん、油、こしょう、酢などの基本調味料は家庭に常備されているものとし、在庫になくても使用して構いません。
-    ・在庫にある食材をなるべく活用してください。
-    ・ただし、主要な食材（肉、魚、野菜、米、麺など）が在庫に全くない場合は「料理は作れません」を返してください。
-    ・予算や調理時間の制約が指定されている場合、それを明らかに超える料理しか作れない場合は「料理は作れません」を返してください。
-    ・制約を満たす献立が可能な場合は、必ず献立を提案してください。
-
-    ▼家族の好み
-    好き：#{likes.to_json}
-    嫌い：#{dislikes.to_json}
-
-    ▼冷蔵庫の在庫（なるべく在庫を活用してください。基本調味料は常備とみなします）
-    #{stock_list.to_json}
-
-    ▼制約条件（1日あたり）
-    #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
-
-    ▼リクエスト
-    #{request_display}
-    #{request_instruction}
-
     ▼過去のフィードバック
     #{feedback.to_json}
 
     ▼返す形式（厳守）
     制約条件を検証し、主要食材の不足・予算超過・時間超過で献立が不可能な場合のみ、以下のいずれかを返してください。
-    
+
     【在庫が足りない場合】
     [
       {
         "day": 1,
         "title": "料理は作れません",
         "reason": "在庫がありません",
-        "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{request_display}
+        "ingredients": ["必要な材料1", "必要な材料2"]
       }
     ]
-    
+
     【予算が足りない場合】
     [
       {
         "day": 1,
         "title": "料理は作れません",
         "reason": "予算が〇〇円足りません",
-        "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{request_display}
+        "ingredients": ["必要な材料1", "必要な材料2"]
       }
     ]
-    
+
     【調理時間が足りない場合】
     [
       {
         "day": 1,
         "title": "料理は作れません",
         "reason": "調理時間が〇〇分足りません",
-        "ingredients": ["必要な材料1", "必要な材料2"],
-        "requests": #{request_display}
+        "ingredients": ["必要な材料1", "必要な材料2"]
       }
     ]
-    
+
     【制約条件をすべて満たす場合】#{days}日分の異なる献立を返してください
     [
       {
         "day": 1,
         "title": "string",
-        "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
+        "reason": "具体的な理由（例：「〇〇さんが好きなので」「〇〇の在庫を活用して」など、家族の好みや在庫に基づいた具体的な理由。「制約条件を満たしています」のような当たり前の理由は禁止）",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
-        "ingredients": ["材料1", "材料2"],
-        "requests": #{request_display}
+        "ingredients": ["材料1", "材料2"]
       },
       {
         "day": 2,
         "title": "string",
-        "reason": "具体的な理由（例：「〇〇が好きなので」「〇〇の在庫が豊富なので」「リクエストされた〇〇を使った」など、家族の好み・在庫・リクエストに基づいた具体的で説得力のある理由を必ず記述してください。「制約条件を満たしています」のような当たり前の理由は禁止です）",
-        "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
-        "ingredients": ["材料1", "材料2"],
-        "requests": #{request_display}
+        "reason": "具体的な理由",
+        "time": この日の料理の調理時間（分単位の整数）,
+        "ingredients": ["材料1", "材料2"]
       }
     ]
     PROMPT
