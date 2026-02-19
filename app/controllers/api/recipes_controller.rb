@@ -43,6 +43,24 @@ class Api::RecipesController < ApplicationController
     render json: { recipe: ai_result }
   end
 
+  # POST /api/recipe/save_recipe
+  # レシピを保存する
+  def save_recipe
+    dish_name = params[:dish_name]
+    return render json: { error: "料理名を入力してください" }, status: :bad_request if dish_name.blank?
+
+    recipe = Recipe.create!(
+      dish_name: dish_name,
+      proposer: params[:proposer],
+      servings: params[:servings],
+      missing_ingredients: params[:missing_ingredients],
+      cooking_time: params[:cooking_time],
+      steps: params[:steps]
+    )
+
+    render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created
+  end
+
   private
 
   def build_recipe_prompt(dish_name, servings, stock_list)
