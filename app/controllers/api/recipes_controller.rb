@@ -7,7 +7,6 @@ class Api::RecipesController < ApplicationController
   def explain
     dish_name     = params[:dish_name]
     servings      = params[:servings]
-    suggestion_id = params[:suggestion_id]
 
     # バリデーション
     return render json: { error: "料理名を入力してください" }, status: :bad_request if dish_name.blank?
@@ -41,17 +40,7 @@ class Api::RecipesController < ApplicationController
 
     parsed = JSON.parse(ai_result)
 
-    # Recipeテーブルに保存
-    current_member = @current_user.member
-    recipe = Recipe.create!(
-      dish_name: dish_name,
-      proposer: current_member&.id,
-      servings: servings,
-      missing_ingredients: parsed["missing_ingredients"],
-      cooking_time: parsed["cooking_time"],
-      steps: parsed["steps"],
-      suggestion_id: suggestion_id
-    )
+    # フロントエンドでユーザがRecipeテーブルに保存するか決定
 
     render json: { id: recipe.id, recipe: parsed }
   rescue JSON::ParserError
@@ -67,10 +56,7 @@ class Api::RecipesController < ApplicationController
     recipe = Recipe.create!(
       dish_name: dish_name,
       proposer: params[:proposer],
-      servings: params[:servings],
-      missing_ingredients: params[:missing_ingredients],
-      cooking_time: params[:cooking_time],
-      steps: params[:steps]
+      reason: params[:reason],
     )
 
     render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created
@@ -88,6 +74,7 @@ class Api::RecipesController < ApplicationController
     render json: {
       id: recipe.id,
       dish_name: recipe.dish_name,
+      reason: recipe.reason,
       servings: recipe.servings,
       missing_ingredients: recipe.missing_ingredients,
       cooking_time: recipe.cooking_time,
