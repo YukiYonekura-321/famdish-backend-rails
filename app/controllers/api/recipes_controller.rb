@@ -40,11 +40,29 @@ class Api::RecipesController < ApplicationController
 
     parsed = JSON.parse(ai_result)
 
-    # フロントエンドでユーザがRecipeテーブルに保存するか決定
-
-    render json: { id: recipe.id, recipe: parsed }
+    render json: { recipe: parsed }
   rescue JSON::ParserError
     render json: { recipe: ai_result }
+  end
+
+  # GET /api/recipes
+  # 全献立一覧を取得する
+  def index
+    recipes = Recipe.order(created_at: :desc)
+
+    render json: recipes.map { |r|
+      {
+        id: r.id,
+        dish_name: r.dish_name,
+        reason: r.reason,
+        servings: r.servings,
+        missing_ingredients: r.missing_ingredients,
+        cooking_time: r.cooking_time,
+        steps: r.steps,
+        proposer_id: r.proposer,
+        created_at: r.created_at
+      }
+    }, status: :ok
   end
 
   # POST /api/recipe/save_recipe

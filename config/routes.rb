@@ -41,6 +41,7 @@ Rails.application.routes.draw do
     delete "goods/destroy_suggestion/:id", to: "goods#destroy_suggestion"
 
     # レシピ説明・保存・取得
+    get "recipes", to: "recipes#index"
     post "recipes/explain", to: "recipes#explain"
     post "recipe/save_recipe", to: "recipes#save_recipe"
     get "recipes/:id", to: "recipes#get_recipe"
