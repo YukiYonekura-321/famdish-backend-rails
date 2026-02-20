@@ -61,6 +61,27 @@ class Api::RecipesController < ApplicationController
     render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created
   end
 
+  # GET /api/recipes/:id
+  # レシピを取得する
+  def get_recipe
+    recipe_id = params[:id]
+    return render json: { error: "レシピIDを入力してください" }, status: :bad_request if recipe_id.blank?
+
+    recipe = Recipe.find_by(id: recipe_id)
+    return render json: { error: "レシピが見つかりません" }, status: :not_found unless recipe
+
+    render json: {
+      id: recipe.id,
+      dish_name: recipe.dish_name,
+      servings: recipe.servings,
+      missing_ingredients: recipe.missing_ingredients,
+      cooking_time: recipe.cooking_time,
+      steps: recipe.steps,
+      proposer_id: recipe.proposer,
+      created_at: recipe.created_at
+    }, status: :ok
+  end
+
   private
 
   def build_recipe_prompt(dish_name, servings, stock_list)
