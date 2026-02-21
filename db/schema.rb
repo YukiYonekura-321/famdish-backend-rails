@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_20_232330) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_21_032145) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_20_232330) do
     t.datetime "updated_at", null: false
     t.bigint "suggestion_id"
     t.text "reason"
+    t.bigint "family_id"
   end
 
   create_table "stocks", force: :cascade do |t|
@@ -124,6 +125,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_20_232330) do
   add_foreign_key "members", "families"
   add_foreign_key "members", "users"
   add_foreign_key "menus", "members"
+  add_foreign_key "recipes", "families"
   add_foreign_key "recipes", "members", column: "proposer"
   add_foreign_key "recipes", "suggestions"
   add_foreign_key "stocks", "families"
