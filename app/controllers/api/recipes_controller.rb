@@ -102,6 +102,25 @@ class Api::RecipesController < ApplicationController
     }, status: :ok
   end
 
+  # POST /api/recipe/:id
+  # レシピを更新する
+  def update
+    recipe_id = params[:id]
+    return render json: { error: "レシピIDを入力してください" }, status: :bad_request if recipe_id.blank?
+
+    recipe = Recipe.find_by(id: recipe_id)
+    return render json: { error: "レシピが見つかりません" }, status: :not_found unless recipe
+
+    recipe.update!(
+      servings: params[:servings],
+      missing_ingredients: params[:missing_ingredients],
+      cooking_time: params[:cooking_time],
+      steps: params[:steps]
+    )
+
+    render json: { id: recipe.id, message: "レシピを更新しました" }, status: :ok
+  end
+
   private
 
   def build_recipe_prompt(dish_name, servings, stock_list)
