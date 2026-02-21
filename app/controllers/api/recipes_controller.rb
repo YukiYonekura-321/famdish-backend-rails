@@ -65,16 +65,48 @@ class Api::RecipesController < ApplicationController
     }, status: :ok
   end
 
+  # GET /api/recipes/family
+  # 家族ごとの献立一覧を取得する
+  def family_recipes
+    family = @current_user.family
+    return render json: { error: "家族が見つかりません" }, status: :bad_request unless family
+
+    recipes = Recipe.where(family_id: family.id).order(created_at: :desc)
+
+    render json: recipes.map { |r|
+      {
+        id: r.id,
+        dish_name: r.dish_name,
+        reason: r.reason,
+        servings: r.servings,
+        missing_ingredients: r.missing_ingredients,
+        cooking_time: r.cooking_time,
+        steps: r.steps,
+        proposer_id: r.proposer,
+        created_at: r.created_at
+      }
+    }, status: :ok
+  end
+
   # POST /api/recipe/save_recipe
   # レシピを保存する
   def save_recipe
     dish_name = params[:dish_name]
     return render json: { error: "料理名を入力してください" }, status: :bad_request if dish_name.blank?
 
+    family = @current_user.family
+    current_member = @current_user.member
+
     recipe = Recipe.create!(
       dish_name: dish_name,
       proposer: params[:proposer],
-      reason: params[:reason],
+      family_id: family&.id,
+      servings: params[:servings],
+      missing_ingredients: params[:missing_ingredients],
+      cooking_time: params[:cooking_time],
+      steps: params[:steps],
+      suggestion_id: params[:suggestion_id],
+      reason: params[:reason]
     )
 
     render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created

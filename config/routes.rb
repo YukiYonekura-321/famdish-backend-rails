@@ -42,6 +42,7 @@ Rails.application.routes.draw do
 
     # レシピ説明・保存・取得・更新
     get "recipes", to: "recipes#index"
+    get "recipes/family", to: "recipes#family_recipes"
     post "recipes/explain", to: "recipes#explain"
     post "recipe/save_recipe", to: "recipes#save_recipe"
     get "recipes/:id", to: "recipes#get_recipe"
