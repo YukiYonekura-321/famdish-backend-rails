@@ -77,6 +77,7 @@ class Api::RecipesController < ApplicationController
       {
         id: r.id,
         dish_name: r.dish_name,
+        family_name: r.family&.name,
         reason: r.reason,
         servings: r.servings,
         missing_ingredients: r.missing_ingredients,
