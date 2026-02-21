@@ -48,12 +48,13 @@ class Api::RecipesController < ApplicationController
   # GET /api/recipes
   # 全献立一覧を取得する
   def index
-    recipes = Recipe.order(created_at: :desc)
+    recipes = Recipe.includes(:family).order(created_at: :desc)
 
     render json: recipes.map { |r|
       {
         id: r.id,
         dish_name: r.dish_name,
+        family_name: r.family&.name,
         reason: r.reason,
         servings: r.servings,
         missing_ingredients: r.missing_ingredients,
@@ -77,7 +78,6 @@ class Api::RecipesController < ApplicationController
       {
         id: r.id,
         dish_name: r.dish_name,
-        family_name: r.family&.name,
         reason: r.reason,
         servings: r.servings,
         missing_ingredients: r.missing_ingredients,
