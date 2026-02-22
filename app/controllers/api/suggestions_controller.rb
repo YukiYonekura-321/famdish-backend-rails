@@ -61,15 +61,11 @@ class Api::SuggestionsController < ApplicationController
 
     # フロントから渡されるパラメータ
     id           = params[:sgId] || {}
-    servings     = params[:servings]     # 何人分か（例: 4）
     budget       = params[:budget]       # 希望する予算（例: 1500）
-    cooking_time = params[:cooking_time] # 希望する調理時間（例: 30）
     days         = (params[:days].to_i > 0) ? params[:days].to_i : 1  # 何日分か（デフォルト1）
 
     constraints = {
-      servings: servings,
-      budget: budget,
-      cooking_time: cooking_time
+      budget: budget
     }
 
     # 過去のフィードバック取得
@@ -130,9 +126,7 @@ class Api::SuggestionsController < ApplicationController
 
     # 制約条件テキスト生成
     constraint_lines = []
-    constraint_lines << "・#{constraints[:servings]}人分" if constraints[:servings].present?
     constraint_lines << "・予算: #{constraints[:budget]}円以内" if constraints[:budget].present?
-    constraint_lines << "・調理時間: #{constraints[:cooking_time]}分以内" if constraints[:cooking_time].present?
 
     if days > 1
       build_multi_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines, days)
@@ -162,7 +156,7 @@ class Api::SuggestionsController < ApplicationController
     #{stock_list.to_json}
 
     ▼制約条件
-    #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
+    #{constraint_lines.present? ? constraint_lines.first : "特になし"}
 
     ▼過去のフィードバック
     #{feedback.to_json}
@@ -177,21 +171,7 @@ class Api::SuggestionsController < ApplicationController
       "ingredients": ["必要な材料1", "必要な材料2"]
     }
 
-    【予算が足りない場合】
-    {
-      "title": "料理は作れません",
-      "reason": "予算が〇〇円足りません",
-      "ingredients": ["必要な材料1", "必要な材料2"]
-    }
-
-    【調理時間が足りない場合】
-    {
-      "title": "料理は作れません",
-      "reason": "調理時間が〇〇分足りません",
-      "ingredients": ["必要な材料1", "必要な材料2"]
-    }
-
-    【制約条件をすべて満たす場合】
+    【制約条件を満たす場合】
     {
       "title": "string",
       "reason": "具体的な理由（例：「〇〇さんが好きなので」「〇〇の在庫を活用して」など、家族の好みや在庫に基づいた具体的な理由。「制約条件を満たしています」のような当たり前の理由は禁止）",
@@ -224,7 +204,7 @@ class Api::SuggestionsController < ApplicationController
     #{stock_list.to_json}
 
     ▼制約条件（1日あたり）
-    #{constraint_lines.any? ? constraint_lines.join("\n") : "特になし"}
+    #{constraint_lines.present? ? constraint_lines.first : "特になし"}
 
     ▼過去のフィードバック
     #{feedback.to_json}
@@ -242,27 +222,7 @@ class Api::SuggestionsController < ApplicationController
       }
     ]
 
-    【予算が足りない場合】
-    [
-      {
-        "day": 1,
-        "title": "料理は作れません",
-        "reason": "予算が〇〇円足りません",
-        "ingredients": ["必要な材料1", "必要な材料2"]
-      }
-    ]
-
-    【調理時間が足りない場合】
-    [
-      {
-        "day": 1,
-        "title": "料理は作れません",
-        "reason": "調理時間が〇〇分足りません",
-        "ingredients": ["必要な材料1", "必要な材料2"]
-      }
-    ]
-
-    【制約条件をすべて満たす場合】#{days}日分の異なる献立を返してください
+    【制約条件を満たす場合】#{days}日分の異なる献立を返してください
     [
       {
         "day": 1,
