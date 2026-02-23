@@ -154,6 +154,20 @@ class Api::RecipesController < ApplicationController
     render json: { id: recipe.id, message: "レシピを更新しました" }, status: :ok
   end
 
+  # DELETE /api/recipes/:id
+  # レシピを削除する
+  def destroy
+    recipe_id = params[:id]
+    return render json: { error: "レシピIDを入力してください" }, status: :bad_request if recipe_id.blank?
+
+    recipe = Recipe.find_by(id: recipe_id)
+    return render json: { error: "レシピが見つかりません" }, status: :not_found unless recipe
+
+    recipe.destroy!
+
+    render json: { message: "レシピを削除しました" }, status: :ok
+  end
+
   private
 
   def build_recipe_prompt(dish_name, servings, stock_list)

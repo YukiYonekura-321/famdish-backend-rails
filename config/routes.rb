@@ -40,13 +40,14 @@ Rails.application.routes.draw do
     post "goods/create_suggestion", to: "goods#create_suggestion"
     delete "goods/destroy_suggestion/:id", to: "goods#destroy_suggestion"
 
-    # レシピ説明・保存・取得・更新
+    # レシピ説明・保存・取得・更新・削除
     get "recipes", to: "recipes#index"
     get "recipes/family", to: "recipes#family_recipes"
     post "recipes/explain", to: "recipes#explain"
     post "recipe/save_recipe", to: "recipes#save_recipe"
     get "recipes/:id", to: "recipes#get_recipe"
     post "recipe/:id", to: "recipes#update"
+    delete "recipes/:id", to: "recipes#destroy"
 
     # 招待機能
     resources :invitations, only: [:create], param: :token do
