@@ -186,6 +186,7 @@ class Api::SuggestionsController < ApplicationController
       "title": "string",
       "reason": "具体的な理由（例：「〇〇さんが好きなので」「〇〇の在庫を活用して」など、家族の好みや在庫に基づいた具体的な理由。「制約条件を満たしています」のような当たり前の理由は禁止）",
       "time": この料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
+      "budget": この料理の予算（円単位の整数。材料から適切に推定してください）,
       "ingredients": ["材料1", "材料2"]
     }
     PROMPT
@@ -249,6 +250,7 @@ class Api::SuggestionsController < ApplicationController
         "title": "string",
         "reason": "具体的な理由（例：「〇〇さんが好きなので」「〇〇の在庫を活用して」など、家族の好みや在庫に基づいた具体的な理由。「制約条件を満たしています」のような当たり前の理由は禁止）",
         "time": この日の料理の調理時間（分単位の整数。材料と調理方法から適切に推定してください）,
+        "budget": この日の料理の予算（円単位の整数。材料から適切に推定してください）,
         "ingredients": ["材料1", "材料2"]
       },
       {
@@ -256,6 +258,7 @@ class Api::SuggestionsController < ApplicationController
         "title": "string",
         "reason": "具体的な理由",
         "time": この日の料理の調理時間（分単位の整数）,
+        "budget": この日の料理の予算（円単位の整数）,
         "ingredients": ["材料1", "材料2"]
       }
     ]
