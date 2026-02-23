@@ -62,9 +62,11 @@ class Api::SuggestionsController < ApplicationController
     # フロントから渡されるパラメータ
     id           = params[:sgId] || {}
     budget       = params[:budget]       # 希望する予算（例: 1500）
+    cooking_time = params[:cooking_time] # 希望する調理時間 (例: 20)
     days         = (params[:days].to_i > 0) ? params[:days].to_i : 1  # 何日分か（デフォルト1）
 
     constraints = {
+      cooking_time: cooking_time,
       budget: budget
     }
 
@@ -127,6 +129,7 @@ class Api::SuggestionsController < ApplicationController
     # 制約条件テキスト生成
     constraint_lines = []
     constraint_lines << "・予算: #{constraints[:budget]}円以内" if constraints[:budget].present?
+    constraint_lines << "・調理時間: #{constraints[:cooking_time]}分以内" if constraints[:cooking_time].present?
 
     if days > 1
       build_multi_day_prompt(likes, dislikes, stock_list, feedback, constraint_lines, days)
@@ -168,6 +171,13 @@ class Api::SuggestionsController < ApplicationController
     {
       "title": "料理は作れません",
       "reason": "在庫がありません",
+      "ingredients": ["必要な材料1", "必要な材料2"]
+    }
+    
+    【調理時間が足りない場合】
+    {
+      "title": "料理は作れません",
+      "reason": "調理時間が〇〇分足りません",
       "ingredients": ["必要な材料1", "必要な材料2"]
     }
 
@@ -218,6 +228,16 @@ class Api::SuggestionsController < ApplicationController
         "day": 1,
         "title": "料理は作れません",
         "reason": "在庫がありません",
+        "ingredients": ["必要な材料1", "必要な材料2"]
+      }
+    ]
+
+    調理時間が足りない場合】
+    [
+      {
+        "day": 1,
+        "title": "料理は作れません",
+        "reason": "調理時間が〇〇分足りません",
         "ingredients": ["必要な材料1", "必要な材料2"]
       }
     ]
