@@ -6,6 +6,8 @@ Rails.application.routes.draw do
     resources :members, only: [ :index, :show, :create, :update, :destroy ] do
       # GET /api/members/me
       get :me, on: :collection
+      # GET /api/members/all
+      get :all, on: :collection
     end
     resources :likes, only: [ :index ]
     resources :stocks, only: [ :index, :create, :update, :destroy ]
