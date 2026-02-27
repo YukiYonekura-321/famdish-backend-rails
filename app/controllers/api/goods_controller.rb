@@ -6,99 +6,84 @@ module Api
 
     # GET /api/goods/check?menu_id=123
     def check
-      menu_id = params[:menu_id]
-      return render json: { error: "menu_id が必要です" }, status: :bad_request unless menu_id.present?
-
-      good = Good.find_by(user_id: @current_user.id, menu_id: menu_id)
-      render json: {
-        exists: good.present?,
-        good: good ? { id: good.id } : nil
-      }, status: :ok
+      check_good(:menu_id)
     end
 
     # GET /api/goods/count?menu_id=1
     def count
-      menu_id = params[:menu_id]
-      return render json: { error: "menu_id が必要です" }, status: :bad_request unless menu_id.present?
-
-      count = Good.where(menu_id: menu_id).count
-      render json: { menu_id: menu_id.to_i, count: count }, status: :ok
+      count_good(:menu_id)
     end
 
     # POST /api/goods
-    # body: { good: { menu_id: 1 } }
     def create
-      menu_id = params.dig(:good, :menu_id) || params[:menu_id]
-      return render json: { error: "menu_id が必要です" }, status: :bad_request unless menu_id.present?
-
-      good = Good.find_by(user_id: @current_user.id, menu_id: menu_id)
-      return render json: { id: good.id }, status: :ok if good
-
-      good = Good.create!(user_id: @current_user.id, menu_id: menu_id)
-      render json: { id: good.id }, status: :created
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.record.errors.full_messages.join(", ") }, status: :unprocessable_entity
+      id = params.dig(:good, :menu_id) || params[:menu_id]
+      create_good(:menu_id, id)
     end
 
     # ── suggestion_id 系 ──
 
     # GET /api/goods/check_suggestion?suggestion_id=456
     def check_suggestion
-      suggestion_id = params[:suggestion_id]
-      return render json: { error: "suggestion_id が必要です" }, status: :bad_request unless suggestion_id.present?
-
-      good = Good.find_by(user_id: @current_user.id, suggestion_id: suggestion_id)
-      render json: {
-        exists: good.present?,
-        good: good ? { id: good.id } : nil
-      }, status: :ok
+      check_good(:suggestion_id)
     end
 
     # GET /api/goods/count_suggestion?suggestion_id=1
     def count_suggestion
-      suggestion_id = params[:suggestion_id]
-      return render json: { error: "suggestion_id が必要です" }, status: :bad_request unless suggestion_id.present?
-
-      count = Good.where(suggestion_id: suggestion_id).count
-      render json: { suggestion_id: suggestion_id.to_i, count: count }, status: :ok
+      count_good(:suggestion_id)
     end
 
-    # POST /api/goods/create_suggestion?suggestion_id=1
-    # or body: { good: { suggestion_id: 1 } }
+    # POST /api/goods/create_suggestion
     def create_suggestion
-      suggestion_id = params.dig(:good, :suggestion_id) || 
-                      params[:suggestion_id] || 
-                      params.dig(:params, :suggestion_id)
-      
-      return render json: { error: "suggestion_id が必要です" }, status: :bad_request unless suggestion_id.present?
-
-      good = Good.find_by(user_id: @current_user.id, suggestion_id: suggestion_id)
-      return render json: { id: good.id }, status: :ok if good
-
-      good = Good.create!(user_id: @current_user.id, suggestion_id: suggestion_id)
-      render json: { id: good.id }, status: :created
-    rescue ActiveRecord::RecordInvalid => e
-      render json: { error: e.record.errors.full_messages.join(", ") }, status: :unprocessable_entity
+      id = params.dig(:good, :suggestion_id) || params[:suggestion_id]
+      create_good(:suggestion_id, id)
     end
 
     # ── 共通 ──
 
     # DELETE /api/goods/:id
+    # DELETE /api/goods/destroy_suggestion/:id
     def destroy
-      good = Good.find_by(id: params[:id], user_id: @current_user.id)
+      good = current_user_good(params[:id])
       return render json: { error: "権限がありません" }, status: :unauthorized unless good
 
       good.destroy
       head :no_content
     end
 
-    # DELETE /api/goods/destroy_suggestion/:id
-    def destroy_suggestion
-      good = Good.find_by(id: params[:id], user_id: @current_user.id)
-      return render json: { error: "権限がありません" }, status: :unauthorized unless good
+    alias destroy_suggestion destroy
 
-      good.destroy
-      head :no_content
+    private
+
+    def check_good(key)
+      value = params[key]
+      return render json: { error: "#{key} が必要です" }, status: :bad_request if value.blank?
+
+      good = Good.find_by(user_id: @current_user.id, key => value)
+      render json: { exists: good.present?, good: good ? { id: good.id } : nil }, status: :ok
+    end
+
+    def count_good(key)
+      value = params[key]
+      return render json: { error: "#{key} が必要です" }, status: :bad_request if value.blank?
+
+      count = Good.where(key => value).count
+      render json: { key => value.to_i, count: count }, status: :ok
+    end
+
+    def create_good(key, value)
+      return render json: { error: "#{key} が必要です" }, status: :bad_request if value.blank?
+
+      good = Good.find_by(user_id: @current_user.id, key => value)
+      return render json: { id: good.id }, status: :ok if good
+
+      good = Good.create!(user_id: @current_user.id, key => value)
+      render json: { id: good.id }, status: :created
+    rescue ActiveRecord::RecordInvalid => e
+      render json: { error: e.record.errors.full_messages.join(", ") }, status: :unprocessable_entity
+    end
+
+    def current_user_good(id)
+      Good.find_by(id: id, user_id: @current_user.id)
     end
   end
 end
