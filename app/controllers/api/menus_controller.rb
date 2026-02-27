@@ -1,66 +1,71 @@
 module Api
   class MenusController < ApplicationController
     before_action :authenticate_user!
+    before_action :set_family, only: [:index, :show]
+    before_action :set_own_menu, only: [:update, :destroy]
 
+    # GET /api/menus
     def index
-      family = @current_user.family
-      return render json: [], status: :ok unless family
+      return render json: [], status: :ok unless @family
 
-      # family に属するメンバーが投稿したメニューのみ取得
-      menus = Menu.joins(:member).where(members: { family_id: family.id }).includes(:member)
+      menus = family_menus.includes(:member)
 
       render json: menus.as_json(
         only: [:id, :name],
-        include: {
-          member: { only: [:id, :name] }
-        }
+        include: { member: { only: [:id, :name] } }
       ), status: :ok
     end
 
+    # GET /api/menus/:id
     def show
-      family = @current_user.family
-      return render_unauthorized("メニューが見つかりません") unless family
+      return render json: { error: "家族が見つかりません" }, status: :bad_request unless @family
 
-      menu = Menu.joins(:member)
-             .where(members: { family_id: family.id })
-             .includes(:member)
-             .find_by(id: params[:id])
-      return render_unauthorized("権限がありません") unless menu
+      menu = family_menus.includes(:member).find_by(id: params[:id])
+      return render json: { error: "メニューが見つかりません" }, status: :not_found unless menu
 
       render json: menu, status: :ok
     end
 
+    # POST /api/menus
     def create
       member = @current_user.member
-      return render json: { error: "Member が見つかりません" }, status: :forbidden unless member
+      return render json: { error: "メンバーが見つかりません" }, status: :forbidden unless member
 
       menu = Menu.create!(menu_params.merge(member: member))
       render json: menu, status: :created
     end
 
+    # PATCH /api/menus/:id
     def update
-      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find(params[:id])
-      
-      return render_unauthorized("権限がありません") unless menu
-
-      if menu.update(menu_params)
-        render json: menu, status: :ok
+      if @menu.update(menu_params)
+        render json: @menu, status: :ok
       else
-        render json: { errors: menu.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity
       end
-    rescue ActiveRecord::RecordNotFound
-      render_unauthorized("メニューが見つかりません")
-    end 
+    end
 
+    # DELETE /api/menus/:id
     def destroy
-      menu = Menu.joins(:member).where(members: { user_id: @current_user.id }).find(params[:id])
-      menu.destroy
+      @menu.destroy
       head :no_content
-    rescue ActiveRecord::RecordNotFound
-      render_unauthorized("メニューが見つかりません")
     end
 
     private
+
+    def set_family
+      @family = @current_user.family
+    end
+
+    def set_own_menu
+      @menu = Menu.joins(:member)
+                  .where(members: { user_id: @current_user.id })
+                  .find_by(id: params[:id])
+      render json: { error: "メニューが見つかりません" }, status: :not_found unless @menu
+    end
+
+    def family_menus
+      Menu.joins(:member).where(members: { family_id: @family.id })
+    end
 
     def menu_params
       params.require(:menu).permit(:name)
