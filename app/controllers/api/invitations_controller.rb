@@ -30,10 +30,12 @@ module Api
     def show
       invitation = Invitation.includes(:family).find_by(token: params[:token])
 
+      # 招待が存在しない
       if invitation.nil?
         return render json: { valid: false, error: "招待が見つかりません" }, status: :not_found
       end
 
+      # 有効チェック（未使用 & 期限内）
       if !invitation.valid_invitation?
         return render json: { valid: false, error: "招待が無効または期限切れです" }, status: :unprocessable_entity
       end
