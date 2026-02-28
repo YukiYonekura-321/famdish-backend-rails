@@ -2,7 +2,7 @@ module Api
   class RecipesController < ApplicationController
     wrap_parameters false
     before_action :authenticate_user!
-    before_action :set_recipe, only: [:get_recipe, :update, :destroy]
+    before_action :set_recipe, only: [:show, :update, :destroy]
 
     # POST /api/recipes/explain
     def explain
@@ -36,8 +36,8 @@ module Api
       render json: recipes.map { |r| recipe_json(r) }, status: :ok
     end
 
-    # POST /api/recipe/save_recipe
-    def save_recipe
+    # POST /api/recipes
+    def create
       return render json: { error: "料理名を入力してください" }, status: :bad_request if params[:dish_name].blank?
 
       recipe = Recipe.create!(
@@ -56,11 +56,11 @@ module Api
     end
 
     # GET /api/recipes/:id
-    def get_recipe
+    def show
       render json: recipe_json(@recipe), status: :ok
     end
 
-    # POST /api/recipe/:id
+    # PATCH /api/recipes/:id
     def update
       @recipe.update!(
         servings: params[:servings],
