@@ -28,7 +28,7 @@ module Api
     end
 
     # GET /api/recipes/family
-    def family_recipes
+    def family
       family = @current_user.family
       return render json: { error: "家族が見つかりません" }, status: :bad_request unless family
 

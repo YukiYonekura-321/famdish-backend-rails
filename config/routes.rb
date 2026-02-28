@@ -54,7 +54,7 @@ Rails.application.routes.draw do
     # レシピ
     resources :recipes, only: [:index, :show, :create, :update, :destroy] do
       collection do
-        get  :family_recipes
+        get  :family
         post :explain
       end
     end
