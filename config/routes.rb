@@ -2,15 +2,24 @@ Rails.application.routes.draw do
   get "/api/health", to: proc { [200, {}, ["ok"]] }
 
   namespace :api do
-    resources :menus, only: [ :index, :show, :create, :update, :destroy ]
-    resources :members, only: [ :index, :show, :create, :update, :destroy ] do
-      # GET /api/members/me
-      get :me, on: :collection
-      # GET /api/members/all
-      get :all, on: :collection
+    # メニュー
+    resources :menus, only: [:index, :show, :create, :update, :destroy]
+
+    # メンバー
+    resources :members, only: [:index, :show, :create, :update, :destroy] do
+      collection do
+        get :me
+        get :all
+      end
     end
-    resources :likes, only: [ :index ]
-    resources :stocks, only: [ :index, :create, :update, :destroy ]
+
+    # 好き嫌い
+    resources :likes, only: [:index]
+
+    # 在庫
+    resources :stocks, only: [:index, :create, :update, :destroy]
+
+    # 献立提案
     resources :suggestions, only: [:create, :update] do
       collection do
         get :check
@@ -21,43 +30,41 @@ Rails.application.routes.draw do
       end
     end
 
-    # 担当者設定
+    # 家族・担当者設定
     resources :families, only: [:index] do
       collection do
         post :assign_cook
       end
     end
 
-    # Good（menu_id 系）
-    get "goods/check", to: "goods#check"
+    # Good
     resources :goods, only: [:create, :destroy] do
       collection do
+        get :check
         get :count
+        get :check_suggestion
+        get :count_suggestion
+        post :create_suggestion
+      end
+      member do
+        delete :destroy_suggestion
       end
     end
 
-    # Good（suggestion_id 系）
-    get "goods/check_suggestion", to: "goods#check_suggestion"
-    get "goods/count_suggestion", to: "goods#count_suggestion"
-    post "goods/create_suggestion", to: "goods#create_suggestion"
-    delete "goods/destroy_suggestion/:id", to: "goods#destroy_suggestion"
+    # レシピ
+    resources :recipes, only: [:index, :show, :create, :update, :destroy] do
+      collection do
+        get  :family_recipes
+        post :explain
+      end
+    end
 
-    # レシピ説明・保存・取得・更新・削除
-    get "recipes", to: "recipes#index"
-    get "recipes/family", to: "recipes#family_recipes"
-    post "recipes/explain", to: "recipes#explain"
-    post "recipe/save_recipe", to: "recipes#save_recipe"
-    get "recipes/:id", to: "recipes#get_recipe"
-    post "recipe/:id", to: "recipes#update"
-    delete "recipes/:id", to: "recipes#destroy"
-
-    # 招待機能
+    # 招待
     resources :invitations, only: [:create], param: :token do
       member do
-        post :accept  # POST /api/invitations/:token/accept
+        post :accept
       end
     end
-    # GET /api/invitations/:token（show は認証不要なので別途定義）
     get "invitations/:token", to: "invitations#show", as: :invitation_show
   end
 end
