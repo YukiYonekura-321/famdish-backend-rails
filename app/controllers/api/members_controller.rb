@@ -11,10 +11,10 @@ module Api
       render json: members.as_json(
         only: [:id, :name],
         include: {
-          likes: { only: [:name] },
-          dislikes: { only: [:name] },
+          likes: { only: [:id, :name] },
+          dislikes: { only: [:id, :name] },
           user: { only: [:firebase_uid] },
-          menus: { only: [:name] }
+          menus: { only: [:id, :name] }
         }
       ), status: :ok
     end
