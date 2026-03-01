@@ -27,6 +27,7 @@ module Api
 
       suggestion = Suggestion.create!(
         family_id: @family.id,
+        requests: constraints.compact_blank,
         ai_raw_json: ai_result,
         proposer: @current_member.id
       )

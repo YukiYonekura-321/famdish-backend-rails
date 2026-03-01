@@ -6,13 +6,14 @@ module Api
 
     # POST /api/recipes/explain
     def explain
-      dish_name = params[:dish_name]
-      servings  = params[:servings]
+      dish_name    = params[:dish_name]
+      servings     = params[:servings]
+      cooking_time = fetch_cooking_time(params[:suggestion_id])
 
       return render json: { error: "料理名を入力してください" }, status: :bad_request if dish_name.blank?
       return render json: { error: "何人分か入力してください" }, status: :bad_request if servings.blank?
 
-      prompt = build_recipe_prompt(dish_name, servings, stock_list)
+      prompt = build_recipe_prompt(dish_name, servings, stock_list, cooking_time: cooking_time)
       ai_result = call_openai(prompt)
       parsed = JSON.parse(ai_result)
 
@@ -123,9 +124,17 @@ module Api
       response.dig("choices", 0, "message", "content")
     end
 
-    def build_recipe_prompt(dish_name, servings, stock_list)
+    def fetch_cooking_time(suggestion_id)
+      return nil if suggestion_id.blank?
+
+      suggestion = Suggestion.find_by(id: suggestion_id)
+      suggestion&.requests&.dig("cooking_time")
+    end
+
+    def build_recipe_prompt(dish_name, servings, stock_list, cooking_time: nil)
     <<~PROMPT
     「#{dish_name}」の作り方を#{servings}人分でJSON形式で返してください。
+    #{ cooking_time.present? ? "制限時間は#{cooking_time}分以内です。この時間内に完成できるレシピにしてください。" : "" }
     出力は必ず純粋なJSONのみを返してください。コードブロック（```）や追加説明は一切含めないでください。
 
     ▼冷蔵庫の在庫
@@ -153,6 +162,7 @@ module Api
 
     【cooking_time について】
     ・下準備から完成までの合計時間を分単位の整数で返してください。
+    ・制限時間が指定されている場合は、必ずその時間以内に収まるようにしてください。
 
     【steps について】
     ・初心者にもわかりやすく、具体的な手順を記載してください。
