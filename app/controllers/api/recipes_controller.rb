@@ -14,6 +14,7 @@ module Api
       return render json: { error: "何人分か入力してください" }, status: :bad_request if servings.blank?
 
       prompt = build_recipe_prompt(dish_name, servings, stock_list, cooking_time: cooking_time)
+      Rails.logger.info "[RecipesController#explain] Prompt:\n#{prompt}"
       ai_result = call_openai(prompt)
       parsed = JSON.parse(ai_result)
 

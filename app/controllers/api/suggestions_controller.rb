@@ -23,6 +23,7 @@ module Api
       constraints = { cooking_time: cooking_time, budget: budget }
       feedback    = fetch_feedback(params[:sgId])
       prompt      = build_prompt(@family.id, feedback, constraints, days)
+      Rails.logger.info "[SuggestionsController#create] Prompt:\n#{prompt}"
       ai_result   = call_openai(prompt)
 
       suggestion = Suggestion.create!(
