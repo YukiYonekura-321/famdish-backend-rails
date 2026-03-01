@@ -49,6 +49,7 @@ module Api
         proposer: params[:proposer],
         family_id: @current_user.family&.id,
         servings: params[:servings],
+        suggestion_id: params[:suggestion_id],
         missing_ingredients: params[:missing_ingredients],
         cooking_time: params[:cooking_time],
         steps: params[:steps],
