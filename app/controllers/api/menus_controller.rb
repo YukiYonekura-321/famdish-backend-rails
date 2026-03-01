@@ -16,32 +16,19 @@ module Api
       ), status: :ok
     end
 
-    # GET /api/menus/:id
-    def show
-      return render json: { error: "家族が見つかりません" }, status: :bad_request unless @family
-
-      menu = family_menus.includes(:member).find_by(id: params[:id])
-      return render json: { error: "メニューが見つかりません" }, status: :not_found unless menu
-
-      render json: menu, status: :ok
-    end
-
     # POST /api/menus
     def create
       member = @current_user.member
       return render json: { error: "メンバーが見つかりません" }, status: :forbidden unless member
 
       menu = Menu.create!(menu_params.merge(member: member))
-      render json: menu, status: :created
+      render json: { id: menu.id }, status: :created
     end
 
     # PATCH /api/menus/:id
     def update
-      if @menu.update(menu_params)
-        render json: @menu, status: :ok
-      else
-        render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity
-      end
+      @menu.update!(menu_params)
+      head :no_content
     end
 
     # DELETE /api/menus/:id

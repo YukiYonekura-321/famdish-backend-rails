@@ -73,7 +73,7 @@ module Api
         steps: params[:steps]
       )
 
-      render json: { id: @recipe.id, message: "レシピを更新しました" }, status: :ok
+      head :no_content
     end
 
     # DELETE /api/recipes/:id
