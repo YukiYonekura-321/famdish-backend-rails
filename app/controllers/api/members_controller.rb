@@ -57,19 +57,19 @@ module Api
     # GET /api/members/me
     def me
       family = @current_user.family
-      current_member = Member.includes(:likes, :dislikes).find_by(user_id: @current_user.id)
+      current_member = Member.find_by(user_id: @current_user.id)
 
       render json: {
         family_id: family&.id,
         family_name: family&.name,
         username: current_member&.name,
-        member: current_member&.as_json(only: [:id])
+        member: current_member ? { id: current_member.id } : nil
       }, status: :ok
     end
 
     # GET /api/members/all
     def all
-      render json: Member.all.as_json(only: [:id, :name]), status: :ok
+      render json: Member.select(:id, :name).as_json(only: [:id, :name]), status: :ok
     end
 
     private

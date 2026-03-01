@@ -8,11 +8,9 @@ module Api
 
       likes = Like.joins(:member)
                   .where(members: { family_id: @family.id })
-                  .includes(:member)
 
       render json: likes.as_json(
         only: [:id, :name],
-        include: { member: { only: [:id, :name] } }
       ), status: :ok
     end
 

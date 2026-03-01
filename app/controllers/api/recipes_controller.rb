@@ -28,7 +28,7 @@ module Api
     # GET /api/recipes
     def index
       recipes = Recipe.includes(:family).order(created_at: :desc)
-      render json: recipes.map { |r| recipe_json(r, include_family: true) }, status: :ok
+      render json: recipes.map { |r| recipe_list_json(r, include_family: true) }, status: :ok
     end
 
     # GET /api/recipes/family
@@ -37,7 +37,7 @@ module Api
       return render json: { error: "家族が見つかりません" }, status: :bad_request unless family
 
       recipes = Recipe.where(family_id: family.id).order(created_at: :desc)
-      render json: recipes.map { |r| recipe_json(r) }, status: :ok
+      render json: recipes.map { |r| recipe_list_json(r) }, status: :ok
     end
 
     # POST /api/recipes
@@ -52,7 +52,6 @@ module Api
         missing_ingredients: params[:missing_ingredients],
         cooking_time: params[:cooking_time],
         steps: params[:steps],
-        suggestion_id: params[:suggestion_id],
         reason: params[:reason]
       )
 
@@ -61,7 +60,7 @@ module Api
 
     # GET /api/recipes/:id
     def show
-      render json: recipe_json(@recipe), status: :ok
+      render json: recipe_detail_json(@recipe), status: :ok
     end
 
     # PATCH /api/recipes/:id
@@ -96,8 +95,25 @@ module Api
       Stock.where(family_id: family.id).map { |s| { name: s.name, quantity: s.quantity.to_f, unit: s.unit } }
     end
 
-    def recipe_json(recipe, include_family: false)
+    # 一覧用（軽量）: steps, missing_ingredients を省略
+    def recipe_list_json(recipe, include_family: false)
       json = {
+        id: recipe.id,
+        dish_name: recipe.dish_name,
+        reason: recipe.reason,
+        servings: recipe.servings,
+        cooking_time: recipe.cooking_time,
+        proposer_id: recipe.proposer,
+        suggestion_id: recipe.suggestion_id,
+        created_at: recipe.created_at
+      }
+      json[:family_name] = recipe.family&.name if include_family
+      json
+    end
+
+    # 詳細用（フル）: show で使用
+    def recipe_detail_json(recipe)
+      {
         id: recipe.id,
         dish_name: recipe.dish_name,
         reason: recipe.reason,
@@ -107,10 +123,8 @@ module Api
         steps: recipe.steps,
         proposer_id: recipe.proposer,
         suggestion_id: recipe.suggestion_id,
-        created_at: recipe.created_at
+        created_at: recipe.created_at,
       }
-      json[:family_name] = recipe.family&.name if include_family
-      json
     end
 
     def call_openai(prompt)
