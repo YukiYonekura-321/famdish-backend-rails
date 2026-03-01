@@ -52,6 +52,7 @@ module Api
         missing_ingredients: params[:missing_ingredients],
         cooking_time: params[:cooking_time],
         steps: params[:steps],
+        suggestion_id: params[:suggestion_id],
         reason: params[:reason]
       )
 
@@ -105,6 +106,7 @@ module Api
         cooking_time: recipe.cooking_time,
         steps: recipe.steps,
         proposer_id: recipe.proposer,
+        suggestion_id: recipe.suggestion_id,
         created_at: recipe.created_at
       }
       json[:family_name] = recipe.family&.name if include_family
