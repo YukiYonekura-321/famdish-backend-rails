@@ -49,7 +49,6 @@ module Api
         missing_ingredients: params[:missing_ingredients],
         cooking_time: params[:cooking_time],
         steps: params[:steps],
-        suggestion_id: params[:suggestion_id],
         reason: params[:reason]
       )
 
