@@ -5,15 +5,6 @@ module Api
     before_action :set_family, only: [:create]
     before_action :validate_cook, only: [:create]
 
-    # GET /api/suggestions
-    def index
-      suggestions = Suggestion.includes(:family)
-                              .where(chosen_option: "ok")
-                              .order(created_at: :desc)
-
-      render json: suggestions.map { |s| suggestion_json(s, include_family: true) }, status: :ok
-    end
-
     # POST /api/suggestions
     def create
       budget       = params[:budget]
@@ -62,22 +53,6 @@ module Api
       unless @family.today_cook_id == @current_member.id
         render json: { error: "今日の料理担当者ではありません" }, status: :forbidden
       end
-    end
-
-    # ── JSON ヘルパー ──
-
-    def suggestion_json(suggestion, include_family: false)
-      json = {
-        id: suggestion.id,
-        family_id: suggestion.family_id,
-        ai_raw_json: JSON.parse(suggestion.ai_raw_json),
-        chosen_option: suggestion.chosen_option,
-        feedback: suggestion.feedback,
-        proposer_id: suggestion.proposer,
-        created_at: suggestion.created_at
-      }
-      json[:family_name] = suggestion.family&.name if include_family
-      json
     end
 
     # ── OpenAI ──

@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     resources :menus, only: [:index, :show, :create, :update, :destroy]
 
     # メンバー
-    resources :members, only: [:index, :show, :create, :update, :destroy] do
+    resources :members, only: [:index, :create, :update, :destroy] do
       collection do
         get :me
         get :all
@@ -20,11 +20,7 @@ Rails.application.routes.draw do
     resources :stocks, only: [:index, :create, :update, :destroy]
 
     # 献立提案
-    resources :suggestions, only: [:create, :update] do
-      collection do
-        get :check
-        get :index
-      end
+    resources :suggestions, only: [:create] do
       member do
         post :feedback
       end
