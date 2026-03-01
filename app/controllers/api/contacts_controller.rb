@@ -1,15 +1,17 @@
 module Api
   class ContactsController < ApplicationController
     skip_before_action :authenticate_user!, only: [:create]
-    wrap_parameters false
 
     # POST /api/contacts
     def create
+      Rails.logger.info "[ContactsController#create] Params: #{params.inspect}"
+      
       contact = Contact.new(contact_params)
 
       if contact.save
         render json: { message: "お問い合わせを受け付けました" }, status: :created
       else
+        Rails.logger.error "[ContactsController#create] Validation errors: #{contact.errors.full_messages}"
         render json: { errors: contact.errors.full_messages }, status: :unprocessable_entity
       end
     end
