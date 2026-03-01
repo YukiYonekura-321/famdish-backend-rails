@@ -116,15 +116,10 @@ module Api
     def recipe_detail_json(recipe)
       {
         id: recipe.id,
-        dish_name: recipe.dish_name,
-        reason: recipe.reason,
         servings: recipe.servings,
         missing_ingredients: recipe.missing_ingredients,
         cooking_time: recipe.cooking_time,
         steps: recipe.steps,
-        proposer_id: recipe.proposer,
-        suggestion_id: recipe.suggestion_id,
-        created_at: recipe.created_at,
       }
     end
 
