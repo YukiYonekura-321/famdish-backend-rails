@@ -66,5 +66,12 @@ Rails.application.routes.draw do
       end
     end
     get "invitations/:token", to: "invitations#show", as: :invitation_show
+
+    # ユーザー退会
+    resources :users, only: [] do
+      collection do
+        delete :me, action: :destroy_me
+      end
+    end
   end
 end
