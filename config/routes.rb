@@ -69,5 +69,8 @@ Rails.application.routes.draw do
         delete :me, action: :destroy_me
       end
     end
+
+    # お問い合わせ
+    resources :contacts, only: [:create]
   end
 end
