@@ -20,7 +20,7 @@ Rails.application.routes.draw do
     resources :stocks, only: [:index, :create, :update, :destroy]
 
     # 献立提案
-    resources :suggestions, only: [:create] do
+    resources :suggestions, only: [:create, :show] do
       member do
         post :feedback
       end
