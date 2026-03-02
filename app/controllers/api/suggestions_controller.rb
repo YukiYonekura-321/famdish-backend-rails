@@ -88,7 +88,9 @@ module Api
     end
 
     def fetch_feedback(sg_id)
-      sg_id.present? ? Suggestion.find(sg_id).feedback : {}
+      return {} if sg_id.blank?
+
+      Suggestion.find_by(id: sg_id)&.feedback || {}
     end
   end
 end
