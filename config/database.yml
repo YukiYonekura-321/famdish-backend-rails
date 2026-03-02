@@ -1,13 +1,21 @@
 production:
-  # AWS（RDS）運用の場合は、環境変数に入れるだけ：DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/DATABASE
-  url: <%= ENV["DATABASE_URL"] %>
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  primary: &primary_production
+    url: <%= ENV["DATABASE_URL"] %>
+    adapter: postgresql
+    encoding: unicode
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+
+  queue:
+    <<: *primary_production
+
 development:
-  database: famdish_backend_rails_development
-  host: localhost
-  username: yuki
-  adapter: postgresql
-  encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  primary:
+    database: famdish_backend_rails_development
+    host: localhost
+    username: yuki
+    adapter: postgresql
+    encoding: unicode
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+
+  queue:
+    <<: *primary_production
