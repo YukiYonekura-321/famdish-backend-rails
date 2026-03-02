@@ -1,33 +1,13 @@
 production:
-  primary:
-    url: <%= ENV["DATABASE_URL"] %>
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-
-  queue:
-    url: <%= ENV["QUEUE_DATABASE_URL"] || ENV["DATABASE_URL"] %>
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-    migrations_paths: db/queue_migrate
-    schema_dump: queue_schema.rb
+  url: <%= ENV["DATABASE_URL"] %>
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
 
 development:
-  primary:
-    database: famdish_backend_rails_development
-    host: localhost
-    username: yuki
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-
-  queue:
-    database: famdish_backend_rails_development
-    host: localhost
-    username: yuki
-    adapter: postgresql
-    encoding: unicode
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-    migrations_paths: db/queue_migrate
-    schema_dump: queue_schema.rb
+  database: famdish_backend_rails_development
+  host: localhost
+  username: yuki
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
