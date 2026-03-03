@@ -1,2 +1,2 @@
 web: bundle exec puma -C config/puma.rb
-worker: bundle exec rails runner "SolidQueue::Worker.start"
+worker: bin/jobs worker
