@@ -53,6 +53,17 @@ group :development do
   gem "hirb"
 end
 
+group :development, :test do
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails"
+end
+
+group :test do
+  gem "shoulda-matchers", "~> 6.0"
+  gem "webmock"
+  gem "simplecov", require: false
+end
+
 gem "google-id-token", "~> 1.4"
 
 gem "rack-cors"
