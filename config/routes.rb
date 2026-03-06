@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     # メニュー
-    resources :menus, only: [:index, :show, :create, :update, :destroy]
+    resources :menus, only: [:index, :create, :update, :destroy]
 
     # メンバー
     resources :members, only: [:index, :create, :update, :destroy] do

@@ -1,7 +1,7 @@
 module Api
   class MenusController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_family, only: [:index, :show]
+    before_action :set_family, only: [:index]
     before_action :set_own_menu, only: [:update, :destroy]
 
     # GET /api/menus
