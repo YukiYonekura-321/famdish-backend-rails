@@ -116,5 +116,57 @@ RSpec.describe "Api::Goods", type: :request do
 
       expect(response).to have_http_status(:created)
     end
+
+    it "POST /api/goods/create_suggestion で重複時は既存を返す" do
+      Good.create!(user_id: user.id, suggestion_id: suggestion.id)
+
+      expect {
+        post "/api/goods/create_suggestion", params: { suggestion_id: suggestion.id }, headers: headers
+      }.not_to change(Good, :count)
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "DELETE /api/goods/destroy_suggestion/:id で削除できる" do
+      good = Good.create!(user_id: user.id, suggestion_id: suggestion.id)
+
+      expect {
+        delete "/api/goods/#{good.id}/destroy_suggestion", headers: headers
+      }.to change(Good, :count).by(-1)
+
+      expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe "パラメータ不備" do
+    it "GET /api/goods/check で menu_id 未指定なら 400" do
+      get "/api/goods/check", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "GET /api/goods/count で menu_id 未指定なら 400" do
+      get "/api/goods/count", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "POST /api/goods で menu_id 未指定なら 400" do
+      post "/api/goods", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "GET /api/goods/check_suggestion で suggestion_id 未指定なら 400" do
+      get "/api/goods/check_suggestion", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "GET /api/goods/count_suggestion で suggestion_id 未指定なら 400" do
+      get "/api/goods/count_suggestion", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "POST /api/goods/create_suggestion で suggestion_id 未指定なら 400" do
+      post "/api/goods/create_suggestion", headers: headers
+      expect(response).to have_http_status(:bad_request)
+    end
   end
 end
