@@ -30,5 +30,17 @@ RSpec.describe "Api::Users", type: :request do
        .and change(Dislike, :count).by(-1)
        .and change(Menu, :count).by(-1)
     end
+
+    it "削除に失敗した場合 422 を返す" do
+      allow_any_instance_of(Member).to receive(:destroy!).and_raise(
+        ActiveRecord::RecordNotDestroyed.new("削除できません", member)
+      )
+
+      delete "/api/users/me", headers: headers
+      expect(response).to have_http_status(:unprocessable_entity)
+
+      body = JSON.parse(response.body)
+      expect(body["error"]).to include("退会処理に失敗しました")
+    end
   end
 end
