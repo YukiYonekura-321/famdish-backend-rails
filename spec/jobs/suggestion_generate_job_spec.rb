@@ -45,6 +45,46 @@ RSpec.describe SuggestionGenerateJob, type: :job do
 
       expect(suggestion.reload.status).to eq("failed")
     end
+
+    it "複数日（days > 1）のプロンプトで正常に実行される" do
+      described_class.new.perform(
+        suggestion.id,
+        family.id,
+        {},
+        { "cooking_time" => "30", "budget" => "1500" },
+        3
+      )
+
+      suggestion.reload
+      expect(suggestion.status).to eq("completed")
+      expect(suggestion.ai_raw_json).to be_present
+    end
+
+    it "制約条件（budget + cooking_time）が含まれるプロンプトで正常に実行される" do
+      described_class.new.perform(
+        suggestion.id,
+        family.id,
+        { "note" => "辛いのが良い" },
+        { "cooking_time" => "45", "budget" => "2000" },
+        1
+      )
+
+      suggestion.reload
+      expect(suggestion.status).to eq("completed")
+    end
+
+    it "フィードバック付きで正常に実行される" do
+      described_class.new.perform(
+        suggestion.id,
+        family.id,
+        "前回は味が薄かった",
+        {},
+        1
+      )
+
+      suggestion.reload
+      expect(suggestion.status).to eq("completed")
+    end
   end
 
   describe "キュー設定" do
