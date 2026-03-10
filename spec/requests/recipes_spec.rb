@@ -150,5 +150,40 @@ RSpec.describe "Api::Recipes", type: :request do
       post "/api/recipes/explain", params: { dish_name: "カレー" }, headers: headers
       expect(response).to have_http_status(:bad_request)
     end
+
+    context "suggestion_id が指定されている場合" do
+      let!(:suggestion) do
+        create(:suggestion, family: family, proposer: member.id, status: "completed",
+               ai_raw_json: '{}', requests: { "cooking_time" => "20" })
+      end
+
+      it "suggestion の cooking_time を利用してレシピを生成する" do
+        post "/api/recipes/explain",
+             params: { dish_name: "カレー", servings: 2, suggestion_id: suggestion.id },
+             headers: headers
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "AI が非 JSON を返す場合" do
+      before do
+        client_double = instance_double(OpenAI::Client)
+        allow(OpenAI::Client).to receive(:new).and_return(client_double)
+        allow(client_double).to receive(:chat).and_return(
+          { "choices" => [{ "message" => { "content" => "これはJSONではありません" } }] }
+        )
+      end
+
+      it "生のテキストをそのまま返す" do
+        post "/api/recipes/explain",
+             params: { dish_name: "カレー", servings: 2 },
+             headers: headers
+
+        expect(response).to have_http_status(:ok)
+        body = JSON.parse(response.body)
+        expect(body["recipe"]).to eq("これはJSONではありません")
+      end
+    end
   end
 end
