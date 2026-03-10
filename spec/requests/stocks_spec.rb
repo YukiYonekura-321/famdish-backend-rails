@@ -66,6 +66,11 @@ RSpec.describe "Api::Stocks", type: :request do
       patch "/api/stocks/#{other_stock.id}", params: { stock: { quantity: 5 } }, headers: headers
       expect(response).to have_http_status(:not_found)
     end
+
+    it "バリデーションエラー時に 422 を返す" do
+      patch "/api/stocks/#{stock.id}", params: { stock: { name: "" } }, headers: headers
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 
   describe "DELETE /api/stocks/:id" do
