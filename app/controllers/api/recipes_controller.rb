@@ -2,7 +2,7 @@ module Api
   class RecipesController < ApplicationController
     wrap_parameters false
     before_action :authenticate_user!
-    before_action :set_recipe, only: [:show, :update, :destroy]
+    before_action :set_recipe, only: [ :show, :update, :destroy ]
 
     # POST /api/recipes/explain
     def explain
@@ -119,7 +119,7 @@ module Api
         servings: recipe.servings,
         missing_ingredients: recipe.missing_ingredients,
         cooking_time: recipe.cooking_time,
-        steps: recipe.steps,
+        steps: recipe.steps
       }
     end
 

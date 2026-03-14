@@ -1,11 +1,11 @@
 module Api
   class ContactsController < ApplicationController
-    skip_before_action :authenticate_user!, only: [:create]
+    skip_before_action :authenticate_user!, only: [ :create ]
 
     # POST /api/contacts
     def create
       Rails.logger.info "[ContactsController#create] Params: #{params.inspect}"
-      
+
       contact = Contact.new(contact_params)
 
       if contact.save

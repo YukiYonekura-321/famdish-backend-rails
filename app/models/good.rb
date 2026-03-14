@@ -2,7 +2,7 @@ class Good < ApplicationRecord
   validates :user_id, presence: true
   # menu_id または suggestion_id のどちらかが必要
   validate :menu_or_suggestion_present
-  
+
   private
 
   def menu_or_suggestion_present

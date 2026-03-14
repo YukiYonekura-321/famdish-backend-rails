@@ -1,8 +1,8 @@
 module Api
   class MenusController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_family, only: [:index]
-    before_action :set_own_menu, only: [:update, :destroy]
+    before_action :set_family, only: [ :index ]
+    before_action :set_own_menu, only: [ :update, :destroy ]
 
     # GET /api/menus
     def index
@@ -11,8 +11,8 @@ module Api
       menus = family_menus.includes(:member)
 
       render json: menus.as_json(
-        only: [:id, :name],
-        include: { member: { only: [:id, :name] } }
+        only: [ :id, :name ],
+        include: { member: { only: [ :id, :name ] } }
       ), status: :ok
     end
 

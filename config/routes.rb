@@ -1,12 +1,12 @@
 Rails.application.routes.draw do
-  get "/api/health", to: proc { [200, {}, ["ok"]] }
+  get "/api/health", to: proc { [ 200, {}, [ "ok" ] ] }
 
   namespace :api do
     # メニュー
-    resources :menus, only: [:index, :create, :update, :destroy]
+    resources :menus, only: [ :index, :create, :update, :destroy ]
 
     # メンバー
-    resources :members, only: [:index, :create, :update, :destroy] do
+    resources :members, only: [ :index, :create, :update, :destroy ] do
       collection do
         get :me
         get :all
@@ -14,27 +14,27 @@ Rails.application.routes.draw do
     end
 
     # 好き嫌い
-    resources :likes, only: [:index]
+    resources :likes, only: [ :index ]
 
     # 在庫
-    resources :stocks, only: [:index, :create, :update, :destroy]
+    resources :stocks, only: [ :index, :create, :update, :destroy ]
 
     # 献立提案
-    resources :suggestions, only: [:create, :show] do
+    resources :suggestions, only: [ :create, :show ] do
       member do
         post :feedback
       end
     end
 
     # 家族・担当者設定
-    resources :families, only: [:index] do
+    resources :families, only: [ :index ] do
       collection do
         post :assign_cook
       end
     end
 
     # Good
-    resources :goods, only: [:create, :destroy] do
+    resources :goods, only: [ :create, :destroy ] do
       collection do
         get :check
         get :count
@@ -48,7 +48,7 @@ Rails.application.routes.draw do
     end
 
     # レシピ
-    resources :recipes, only: [:index, :show, :create, :update, :destroy] do
+    resources :recipes, only: [ :index, :show, :create, :update, :destroy ] do
       collection do
         get  :family
         post :explain
@@ -56,7 +56,7 @@ Rails.application.routes.draw do
     end
 
     # 招待
-    resources :invitations, only: [:create], param: :token do
+    resources :invitations, only: [ :create ], param: :token do
       member do
         post :accept
       end
@@ -71,6 +71,6 @@ Rails.application.routes.draw do
     end
 
     # お問い合わせ
-    resources :contacts, only: [:create]
+    resources :contacts, only: [ :create ]
   end
 end

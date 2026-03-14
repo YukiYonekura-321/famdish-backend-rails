@@ -7,11 +7,11 @@ RSpec.describe SuggestionGenerateJob, type: :job do
 
   let(:ai_response) do
     {
-      "choices" => [{
+      "choices" => [ {
         "message" => {
           "content" => '{"options":[{"dish_name":"カレー","reason":"家族が好き"}]}'
         }
-      }]
+      } ]
     }
   end
 

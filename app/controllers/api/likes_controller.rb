@@ -10,7 +10,7 @@ module Api
                   .where(members: { family_id: @family.id })
 
       render json: likes.as_json(
-        only: [:id, :name],
+        only: [ :id, :name ],
       ), status: :ok
     end
 

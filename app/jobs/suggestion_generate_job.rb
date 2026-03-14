@@ -98,7 +98,7 @@ class SuggestionGenerateJob < ApplicationJob
     "reason": "在庫がありません",
     "ingredients": ["必要な材料1", "必要な材料2"]
   }
-  
+
   【調理時間が足りない場合】
   {
     "title": "料理は作れません",

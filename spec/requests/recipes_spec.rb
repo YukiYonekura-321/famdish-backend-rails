@@ -52,8 +52,8 @@ RSpec.describe "Api::Recipes", type: :request do
         dish_name: "カレー",
         servings: 4,
         cooking_time: 60,
-        steps: [{ step: 1, description: "材料を切る" }],
-        missing_ingredients: [{ name: "じゃがいも", quantity: "2個" }],
+        steps: [ { step: 1, description: "材料を切る" } ],
+        missing_ingredients: [ { name: "じゃがいも", quantity: "2個" } ],
         reason: "家族が好き"
       }
     end
@@ -117,11 +117,11 @@ RSpec.describe "Api::Recipes", type: :request do
   describe "POST /api/recipes/explain" do
     let(:ai_response) do
       {
-        "choices" => [{
+        "choices" => [ {
           "message" => {
             "content" => '{"dish_name":"カレー","servings":2,"missing_ingredients":[],"cooking_time":30,"steps":[{"step":1,"description":"作る"}]}'
           }
-        }]
+        } ]
       }
     end
 
@@ -171,7 +171,7 @@ RSpec.describe "Api::Recipes", type: :request do
         client_double = instance_double(OpenAI::Client)
         allow(OpenAI::Client).to receive(:new).and_return(client_double)
         allow(client_double).to receive(:chat).and_return(
-          { "choices" => [{ "message" => { "content" => "これはJSONではありません" } }] }
+          { "choices" => [ { "message" => { "content" => "これはJSONではありません" } } ] }
         )
       end
 

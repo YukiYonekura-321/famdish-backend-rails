@@ -2,8 +2,8 @@ module Api
   class SuggestionsController < ApplicationController
     wrap_parameters false
     before_action :authenticate_user!
-    before_action :set_family, only: [:create]
-    before_action :validate_cook, only: [:create]
+    before_action :set_family, only: [ :create ]
+    before_action :validate_cook, only: [ :create ]
 
     # POST /api/suggestions
     # Suggestion を保存し、AI生成をバックグラウンドジョブにエンキュー

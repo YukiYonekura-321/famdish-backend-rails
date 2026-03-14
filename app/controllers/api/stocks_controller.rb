@@ -2,7 +2,7 @@ module Api
   class StocksController < ApplicationController
     before_action :authenticate_user!
     before_action :set_family
-    before_action :set_stock, only: [:update, :destroy]
+    before_action :set_stock, only: [ :update, :destroy ]
 
     # GET /api/stocks
     def index

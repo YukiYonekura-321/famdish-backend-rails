@@ -1,7 +1,7 @@
 module Api
   class InvitationsController < ApplicationController
-    before_action :authenticate_user!, only: [:create, :accept]
-    before_action :set_valid_invitation, only: [:show, :accept]
+    before_action :authenticate_user!, only: [ :create, :accept ]
+    before_action :set_valid_invitation, only: [ :show, :accept ]
 
     # POST /api/invitations
     def create
@@ -47,7 +47,7 @@ module Api
     def set_valid_invitation
       @invitation = Invitation.includes(:family).find_by(token: params[:token])
       return render json: { error: "招待が見つかりません" }, status: :not_found unless @invitation
-      return render json: { error: "招待が無効または期限切れです" }, status: :unprocessable_entity unless @invitation.valid_invitation?
+      render json: { error: "招待が無効または期限切れです" }, status: :unprocessable_entity unless @invitation.valid_invitation?
     end
 
     def frontend_base_url

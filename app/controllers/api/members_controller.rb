@@ -1,7 +1,7 @@
 module Api
   class MembersController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_authorized_member, only: [:update, :destroy]
+    before_action :set_authorized_member, only: [ :update, :destroy ]
 
     # GET /api/members
     def index
@@ -9,12 +9,12 @@ module Api
       members = family ? family.members.includes(:likes, :dislikes, :menus) : Member.none
 
       render json: members.as_json(
-        only: [:id, :name],
+        only: [ :id, :name ],
         include: {
-          likes: { only: [:id, :name] },
-          dislikes: { only: [:id, :name] },
-          user: { only: [:firebase_uid] },
-          menus: { only: [:id, :name] }
+          likes: { only: [ :id, :name ] },
+          dislikes: { only: [ :id, :name ] },
+          user: { only: [ :firebase_uid ] },
+          menus: { only: [ :id, :name ] }
         }
       ), status: :ok
     end
@@ -33,7 +33,7 @@ module Api
 
         @current_user.update!(family: family, member: member) if link_user
 
-        render json: member.as_json(include: [:likes, :dislikes, family: { only: [:id, :name] }]), status: :created
+        render json: member.as_json(include: [ :likes, :dislikes, family: { only: [ :id, :name ] } ]), status: :created
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
@@ -69,7 +69,7 @@ module Api
 
     # GET /api/members/all
     def all
-      render json: Member.select(:id, :name).as_json(only: [:id, :name]), status: :ok
+      render json: Member.select(:id, :name).as_json(only: [ :id, :name ]), status: :ok
     end
 
     private
@@ -98,8 +98,8 @@ module Api
     def member_params
       params.require(:member).permit(
         :name,
-        likes_attributes: [:id, :name, :_destroy],
-        dislikes_attributes: [:id, :name, :_destroy]
+        likes_attributes: [ :id, :name, :_destroy ],
+        dislikes_attributes: [ :id, :name, :_destroy ]
       )
     end
   end
