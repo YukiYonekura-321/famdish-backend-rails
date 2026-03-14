@@ -59,23 +59,6 @@ RSpec.describe "認証", type: :request do
         expect(response).to have_http_status(:ok)
         expect(FirebaseIdToken::Certificates).to have_received(:request!)
       end
-
-      it "CertificateExpiredError 時に証明書を再取得して認証成功する" do
-        call_count = 0
-        allow(FirebaseIdToken::Signature).to receive(:verify) do
-          call_count += 1
-          if call_count == 1
-            raise FirebaseIdToken::Exceptions::CertificateExpiredError
-          else
-            { "user_id" => "recover-uid" }
-          end
-        end
-        allow(FirebaseIdToken::Certificates).to receive(:request!)
-
-        get "/api/stocks", headers: { "Authorization" => "Bearer some-token" }
-        expect(response).to have_http_status(:ok)
-        expect(FirebaseIdToken::Certificates).to have_received(:request!)
-      end
     end
 
     context "予期しない認証エラー" do
