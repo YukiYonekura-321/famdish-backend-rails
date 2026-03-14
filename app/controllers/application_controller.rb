@@ -24,7 +24,7 @@ class ApplicationController < ActionController::API
 
   def verify_firebase_token(token)
     FirebaseIdToken::Signature.verify(token)
-  rescue FirebaseIdToken::Exceptions::NoCertificatesError,
+  rescue FirebaseIdToken::Exceptions::NoCertificatesError
     FirebaseIdToken::Certificates.request!
     FirebaseIdToken::Signature.verify(token)
   rescue => e

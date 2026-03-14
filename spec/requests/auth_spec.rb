@@ -53,11 +53,10 @@ RSpec.describe "認証", type: :request do
             { "user_id" => "recover-uid" }
           end
         end
-        allow(FirebaseIdToken::Certificates).to receive(:request!)
+        expect(FirebaseIdToken::Certificates).to receive(:request!).and_call_original
 
         get "/api/stocks", headers: { "Authorization" => "Bearer some-token" }
         expect(response).to have_http_status(:ok)
-        expect(FirebaseIdToken::Certificates).to have_received(:request!)
       end
     end
 
