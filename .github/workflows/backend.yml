@@ -1,11 +1,14 @@
-name: CI
+# ワークフロー名
+name: Backend CI
 
+# CIが走るタイミング(Pull Request, mainにpush)
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
+  # セキュリティチェック
   scan_ruby:
     runs-on: ubuntu-latest
 
@@ -21,7 +24,7 @@ jobs:
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
-
+  # Lint
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -36,7 +39,7 @@ jobs:
 
       - name: Lint code for consistent style
         run: bin/rubocop -f github
-
+  # テスト
   test:
     runs-on: ubuntu-latest
 
@@ -74,4 +77,13 @@ jobs:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+        run: |
+          bin/rails db:test:prepare
+          bundle exec rspec --format documentation
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
