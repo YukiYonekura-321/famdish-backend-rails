@@ -11,6 +11,11 @@ SimpleCov.start 'rails' do
   add_filter '/spec/'
   add_filter '/config/'
   add_filter '/db/'
+  # GitHub Actions でのカバレッジ計測を有効化
+  if ENV['CI'] == 'true' || ENV['COVERAGE'] == 'true'
+    coverage_dir = File.expand_path('../coverage', __dir__)
+    FileUtils.mkdir_p(coverage_dir) unless Dir.exist?(coverage_dir)
+  end
 end
 
 # Support ファイルを自動読み込み
