@@ -88,3 +88,36 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/.resultset.json
+          fail_ci_if_error: false
+          - name: Check Rails boot
+      - name: Check Rails boot
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          REDIS_URL: redis://localhost:6379/0
+        run: bin/rails runner "puts 'Rails boot OK'"      
+
+
+  # 本番デプロイ
+  production-deploy:
+    runs-on: ubuntu-latest
+    needs: [test, lint, scan_ruby, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Heroku (Production)
+        uses: AkhileshNS/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
