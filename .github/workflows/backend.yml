@@ -96,14 +96,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/.resultset.json
           fail_ci_if_error: false
-          - name: Check Rails boot
+
       - name: Check Rails boot
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
           REDIS_URL: redis://localhost:6379/0
-        run: bin/rails runner "puts 'Rails boot OK'"      
-
+        run: bin/rails runner "puts 'Rails boot OK'"
 
   # 本番デプロイ
   production-deploy:
