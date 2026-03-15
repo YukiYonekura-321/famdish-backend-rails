@@ -10,7 +10,7 @@ module Api
       servings     = params[:servings]
       cooking_time = fetch_cooking_time(params[:suggestion_id])
 
-      Rails.logger.info "[RecipesController#explain] dish_name=#{dish_name}, servings=#{servings}, suggestion_id=#{params[:suggestion_id]}, cooking_time=#{cooking_time}"
+      Rails.logger.info "[RecipesController] dish_name=#{dish_name}, servings=#{servings}, suggestion_id=#{params[:suggestion_id]}, cooking_time=#{cooking_time}"
 
       return render json: { error: "料理名を入力してください" }, status: :bad_request if dish_name.blank?
       return render json: { error: "何人分か入力してください" }, status: :bad_request if servings.blank?
