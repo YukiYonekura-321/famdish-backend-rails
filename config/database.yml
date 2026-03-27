@@ -6,16 +6,18 @@ production:
 
 development:
   database: famdish_backend_rails_development
-  host: localhost
-  username: yuki
+  host: db
+  username: postgres
+  password: password
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
 
 test:
   database: famdish_backend_rails_test
-  host: localhost
-  username: yuki
+  host: db
+  username: postgres
+  password: password
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
