@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     # トライアル
-    post "trial/aisuggestion", to: "trial#post"
+    post "trial/aisuggestion", to: "trials#aisuggestion"
     # メニュー
     resources :menus, only: [ :index, :create, :update, :destroy ]
 
