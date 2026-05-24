@@ -13,7 +13,7 @@ module Api
       ai_result = call_openai(prompt)
       parsed = JSON.parse(ai_result)
 
-      render json: { recipe: parsed }
+      render json: { sample: parsed }
     rescue JSON::ParserError => e
       Rails.logger.info("[TrialController] JSON Parse Error:#{e.message}")
       render json: {
