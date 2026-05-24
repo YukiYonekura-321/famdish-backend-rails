@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   get "/api/health", to: proc { [ 200, {}, [ "ok" ] ] }
 
   namespace :api do
+    # トライアル
+    post "trial/aisuggestion", to: "trial#post"
     # メニュー
     resources :menus, only: [ :index, :create, :update, :destroy ]
 
