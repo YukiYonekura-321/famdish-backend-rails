@@ -1,5 +1,7 @@
 module Api
   class TrialsController < ApplicationController
+    before_action :authenticate_user!, except: [ :aisuggestion ]  # aisuggestion は認証不要に
+
     # POST /api/trial/aisuggestion
     def aisuggestion
       likes = params[:likes]
