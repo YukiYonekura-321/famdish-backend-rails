@@ -26,6 +26,18 @@ module Api
     private
 
     def call_openai(prompt)
+      client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
+      response = client.chat(
+        parameters: {
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "あなたはプロの料理人です。料理のレシピを正確にJSON形式で返してください。" },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.7
+        }
+      )
+      response.dig("choices", 0, "message", "content")
     end
 
     def build_ai_prompt(likes, dislikes)
