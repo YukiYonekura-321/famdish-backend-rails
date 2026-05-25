@@ -1,7 +1,7 @@
 module Api
   class RecipesController < ApplicationController
     wrap_parameters false
-    before_action :authenticate_user!
+    before_action :authenticate_user!, except: [ :index ] # 一覧表示は認証不要に
     before_action :set_recipe, only: [ :show, :update, :destroy ]
 
     # POST /api/recipes/explain
