@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_02_130000) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_28_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -239,6 +239,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_02_130000) do
     t.datetime "updated_at", null: false
     t.bigint "proposer", null: false
     t.string "status", default: "pending", null: false
+  end
+
+  create_table "trial_usages", force: :cascade do |t|
+    t.string "firebase_uid", null: false
+    t.integer "usage_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["firebase_uid"], name: "index_trial_usages_on_firebase_uid", unique: true
   end
 
   create_table "users", force: :cascade do |t|
