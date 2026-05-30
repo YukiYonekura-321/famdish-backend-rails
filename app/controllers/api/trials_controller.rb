@@ -2,7 +2,7 @@ module Api
   class TrialsController < ApplicationController
     skip_before_action :authenticate_user!, only: [ :aisuggestion ]
 
-    TRIAL_LIMIT = 2
+    TRIAL_LIMIT = 20
 
     # POST /api/trial/aisuggestion
     def aisuggestion
@@ -32,8 +32,11 @@ module Api
       trial_usage.save! if trial_usage.new_record?
       trial_usage.increment!
 
+      image_url = generate_dish_image(parsed)
+
       render json: {
         sample: parsed,
+        image_url: image_url,
         usage_count: trial_usage.usage_count,
         limit: TRIAL_LIMIT
       }
@@ -47,6 +50,35 @@ module Api
     end
 
     private
+
+    def generate_dish_image(parsed)
+      uri = URI.parse("https://fal.run/fal-ai/flux/schnell")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request["Authorization"] = "Key #{ENV['FAL_KEY']}"
+      request["Content-Type"] = "application/json"
+      request.body = { prompt: parsed }.to_json
+
+      response = http.request(request)
+      Rails.logger.info("[TrialsController] FAL API Response Status: #{response.code}")
+      Rails.logger.info("[TrialsController] FAL API Response Body: #{response.body}")
+
+      data = JSON.parse(response.body)
+      Rails.logger.info("[TrialsController] Parsed data: #{data.inspect}")
+
+      # ※fal gemを使用する場合
+      # image = Fal.run("fal-ai/flux/schnell", input: { prompt: parsed.to_json })
+      # image.dig("images", 0, "url")
+      image_url = data.dig("images", 0, "url")
+      Rails.logger.info("[TrialsController] Generated image URL: #{image_url}")
+
+      image_url
+    rescue => e
+      Rails.logger.error("[TrialsController] Image generation error: #{e.message}")
+      nil
+    end
 
     def extract_firebase_uid
       token = request.headers["Authorization"]&.split(" ")&.last
