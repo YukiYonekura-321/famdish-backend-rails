@@ -52,6 +52,9 @@ module Api
     private
 
     def generate_dish_image(parsed)
+      # プロンプトを文字列化（fal.aiが要求）
+      prompt_text = "料理名: #{parsed['title']}, 説明: #{parsed['reason']}, 材料: #{parsed['ingredients'].join('、')}"
+
       uri = URI.parse("https://fal.run/fal-ai/flux/schnell")
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
@@ -59,7 +62,7 @@ module Api
       request = Net::HTTP::Post.new(uri.request_uri)
       request["Authorization"] = "Key #{ENV['FAL_KEY']}"
       request["Content-Type"] = "application/json"
-      request.body = { prompt: parsed }.to_json
+      request.body = { prompt: prompt_text }.to_json
 
       response = http.request(request)
       Rails.logger.info("[TrialsController] FAL API Response Status: #{response.code}")
