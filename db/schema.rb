@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_31_014326) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_31_044236) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_31_014326) do
     t.text "reason"
     t.bigint "family_id"
     t.bigint "suggestion_id"
+    t.string "image_url"
     t.index ["suggestion_id"], name: "index_recipes_on_suggestion_id"
   end
 
