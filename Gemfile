@@ -74,3 +74,5 @@ gem "firebase_id_token", "~> 2.5"
 gem "terminal-table", "~> 4.0"
 
 gem "ruby-openai"
+
+gem "aws-sdk-s3"
