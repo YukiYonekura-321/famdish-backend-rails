@@ -53,7 +53,8 @@ module Api
         missing_ingredients: params[:missing_ingredients],
         cooking_time: params[:cooking_time],
         steps: params[:steps],
-        reason: params[:reason]
+        reason: params[:reason],
+        image_url: params[:image_url]
       )
 
       render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created
@@ -106,6 +107,7 @@ module Api
         cooking_time: recipe.cooking_time,
         proposer_id: recipe.proposer,
         suggestion_id: recipe.suggestion_id,
+        image_url: recipe.image_url,
         created_at: recipe.created_at
       }
       json[:family_name] = recipe.family&.name if include_family
@@ -119,7 +121,8 @@ module Api
         servings: recipe.servings,
         missing_ingredients: recipe.missing_ingredients,
         cooking_time: recipe.cooking_time,
-        steps: recipe.steps
+        steps: recipe.steps,
+        image_url: recipe.image_url
       }
     end
 
