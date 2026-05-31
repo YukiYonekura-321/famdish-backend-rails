@@ -19,7 +19,8 @@ module Api
         family_id: @family.id,
         requests: constraints.compact_blank,
         proposer: @current_member.id,
-        status: "pending"
+        status: "pending",
+        image_url: nil
       )
 
       SuggestionGenerateJob.perform_later(
@@ -43,7 +44,8 @@ module Api
         render json: {
           id: suggestion.id,
           status: suggestion.status,
-          suggest_field: JSON.parse(suggestion.ai_raw_json)
+          suggest_field: JSON.parse(suggestion.ai_raw_json),
+          image_url: suggestion.image_url
         }
       when "failed"
         render json: {

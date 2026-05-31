@@ -10,9 +10,13 @@ class SuggestionGenerateJob < ApplicationJob
 
     ai_result = call_openai(prompt)
 
+    parsed = JSON.parse(ai_result)
+    image_url = generate_dish_image(parsed)
+
     suggestion.update!(
       ai_raw_json: ai_result,
-      status: "completed"
+      status: "completed",
+      image_url: image_url
     )
   rescue StandardError => e
     Rails.logger.error "[SuggestionGenerateJob] Failed: #{e.message}"
@@ -21,6 +25,48 @@ class SuggestionGenerateJob < ApplicationJob
   end
 
   private
+
+  def generate_dish_image(parsed)
+    prompt_text = build_image_prompt(parsed)
+    uri = URI.parse("https://fal.run/fal-ai/flux/schnell")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Post.new(uri.request_uri)
+    request["Authorization"] = "Key #{ENV['FAL_KEY']}"
+    request["Content-Type"] = "application/json"
+    request.body = { prompt: prompt_text }.to_json
+
+    response = http.request(request)
+    Rails.logger.info("[TrialsController] FAL API Response Status: #{response.code}")
+    Rails.logger.info("[TrialsController] FAL API Response Body: #{response.body}")
+
+    data = JSON.parse(response.body)
+    Rails.logger.info("[TrialsController] Parsed data: #{data.inspect}")
+
+    # ※fal gemを使用する場合
+    # image = Fal.run("fal-ai/flux/schnell", input: { prompt: parsed.to_json })
+    # image.dig("images", 0, "url")
+    image_url = data.dig("images", 0, "url")
+    Rails.logger.info("[TrialsController] Generated image URL: #{image_url}")
+
+    image_url
+  rescue => e
+    Rails.logger.error("[TrialsController] Image generation error: #{e.message}")
+    nil
+  end
+
+  def build_image_prompt(parsed)
+    title = parsed["title"]
+    ingredients = parsed["ingredients"]&.join(", ")
+    <<~PROMPT.squish
+      A professional food photograph of #{title}.
+      Made with #{ingredients}.
+      Beautifully plated on a white ceramic dish,
+      soft warm natural lighting, shallow depth of field,
+      food magazine style, photorealistic, 4K, appetizing, delicious.
+    PROMPT
+  end
 
   def call_openai(prompt)
     client = OpenAI::Client.new(access_token: ENV["OPENAI_API_KEY"])
