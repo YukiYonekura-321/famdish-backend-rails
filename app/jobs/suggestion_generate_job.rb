@@ -11,12 +11,33 @@ class SuggestionGenerateJob < ApplicationJob
     ai_result = call_openai(prompt)
 
     parsed = JSON.parse(ai_result)
-    image_url = generate_dish_image(parsed)
+
+    if parsed.is_a?(Array)
+      # 複数日の場合、各日のレシピに対して画像生成
+      parsed.each do |day_parsed|
+        if day_parsed["title"] != "料理は作れません"
+          day_parsed["image_url"] = generate_dish_image(day_parsed)
+        else
+          day_parsed["image_url"] = nil
+        end
+      end
+      representative_image_url = parsed.first&.dig("image_url")
+    else
+      # 1日分の場合
+      if parsed["title"] != "料理は作れません"
+        image_url = generate_dish_image(parsed)
+        parsed["image_url"] = image_url
+      else
+        image_url = nil
+        parsed["image_url"] = nil
+      end
+      representative_image_url = image_url
+    end
 
     suggestion.update!(
-      ai_raw_json: ai_result,
+      ai_raw_json: parsed.to_json,
       status: "completed",
-      image_url: image_url
+      image_url: representative_image_url
     )
   rescue StandardError => e
     Rails.logger.error "[SuggestionGenerateJob] Failed: #{e.message}"
@@ -38,30 +59,28 @@ class SuggestionGenerateJob < ApplicationJob
     request.body = { prompt: prompt_text }.to_json
 
     response = http.request(request)
-    Rails.logger.info("[TrialsController] FAL API Response Status: #{response.code}")
-    Rails.logger.info("[TrialsController] FAL API Response Body: #{response.body}")
+    Rails.logger.info("[SuggestionGenerateJob] FAL API Response Status: #{response.code}")
+    Rails.logger.info("[SuggestionGenerateJob] FAL API Response Body: #{response.body}")
 
     data = JSON.parse(response.body)
-    Rails.logger.info("[TrialsController] Parsed data: #{data.inspect}")
+    Rails.logger.info("[SuggestionGenerateJob] Parsed data: #{data.inspect}")
 
     # ※fal gemを使用する場合
     # image = Fal.run("fal-ai/flux/schnell", input: { prompt: parsed.to_json })
     # image.dig("images", 0, "url")
     image_url = data.dig("images", 0, "url")
-    Rails.logger.info("[TrialsController] Generated image URL: #{image_url}")
+    Rails.logger.info("[SuggestionGenerateJob] Generated image URL: #{image_url}")
 
     image_url
   rescue => e
-    Rails.logger.error("[TrialsController] Image generation error: #{e.message}")
+    Rails.logger.error("[SuggestionGenerateJob] Image generation error: #{e.message}")
     nil
   end
 
   def build_image_prompt(parsed)
     title = parsed["title"]
-    ingredients = parsed["ingredients"]&.join(", ")
     <<~PROMPT.squish
       A professional food photograph of #{title}.
-      Made with #{ingredients}.
       Beautifully plated on a white ceramic dish,
       soft warm natural lighting, shallow depth of field,
       food magazine style, photorealistic, 4K, appetizing, delicious.
