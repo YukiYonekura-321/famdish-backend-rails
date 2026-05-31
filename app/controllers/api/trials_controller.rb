@@ -52,8 +52,7 @@ module Api
     private
 
     def generate_dish_image(parsed)
-      # プロンプトを文字列化（fal.aiが要求）
-      prompt_text = "料理名: #{parsed['title']}, 説明: #{parsed['reason']}, 材料: #{parsed['ingredients'].join('、')}"
+      prompt_text = build_image_prompt(parsed)
 
       uri = URI.parse("https://fal.run/fal-ai/flux/schnell")
       http = Net::HTTP.new(uri.host, uri.port)
@@ -81,6 +80,18 @@ module Api
     rescue => e
       Rails.logger.error("[TrialsController] Image generation error: #{e.message}")
       nil
+    end
+
+    def build_image_prompt(parsed)
+      title = parsed["title"]
+      ingredients = parsed["ingredients"]&.join(", ")
+      <<~PROMPT.squish
+        A professional food photograph of #{title}.
+        Made with #{ingredients}.
+        Beautifully plated on a white ceramic dish,
+        soft warm natural lighting, shallow depth of field,
+        food magazine style, photorealistic, 4K, appetizing, delicious.
+      PROMPT
     end
 
     def extract_firebase_uid
