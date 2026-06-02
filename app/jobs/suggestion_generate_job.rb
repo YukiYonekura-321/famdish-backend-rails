@@ -16,7 +16,15 @@ class SuggestionGenerateJob < ApplicationJob
       # 複数日の場合、各日のレシピに対して画像生成
       parsed.each do |day_parsed|
         if day_parsed["title"] != "料理は作れません"
-          day_parsed["image_url"] = generate_dish_image(day_parsed)
+          tmp_image_url = generate_dish_image(day_parsed)
+          if tmp_image_url.present?
+            # S3へアップロード（複数日なのでsuffix付き、自動DB書き込みはオフ）
+            suffix = "_day#{day_parsed["day"] || day_parsed["day_number"]}"
+            s3_url = UploadGeneratedImageService.call(suggestion, tmp_image_url, suffix: suffix, update_db: false)
+            day_parsed["image_url"] = s3_url
+          else
+            day_parsed["image_url"] = nil
+          end
         else
           day_parsed["image_url"] = nil
         end
@@ -25,13 +33,20 @@ class SuggestionGenerateJob < ApplicationJob
     else
       # 1日分の場合
       if parsed["title"] != "料理は作れません"
-        image_url = generate_dish_image(parsed)
-        parsed["image_url"] = image_url
+        tmp_image_url = generate_dish_image(parsed)
+        if tmp_image_url.present?
+          # S3へアップロード。update_db: trueなので、DB側のimage_urlもここで自動反映
+          s3_url = UploadGeneratedImageService.call(suggestion, tmp_image_url, update_db: true)
+          parsed["image_url"] = s3_url
+          representative_image_url = s3_url
+        else
+          parsed["image_url"] = nil
+          representative_image_url = nil
+        end
       else
-        image_url = nil
         parsed["image_url"] = nil
+        representative_image_url = nil
       end
-      representative_image_url = image_url
     end
 
     suggestion.update!(
