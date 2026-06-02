@@ -57,6 +57,11 @@ module Api
         image_url: params[:image_url]
       )
 
+      # fal.aiなどの一時URL画像をS3に永久保存し、URLを差し替える
+      if params[:image_url].present?
+        UploadGeneratedImageService.call(recipe, params[:image_url])
+      end
+
       render json: { id: recipe.id, message: "レシピを保存しました" }, status: :created
     end
 
